@@ -9,6 +9,12 @@ CREATE TABLE empregados (
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+
+-- pin_acesso: Essencial para o login no PDA. Deve ser armazenado de forma segura (hashed).
+
+-- ativo: Permite desativar um funcionário sem apagar o seu histórico de pedidos.
+
+
 CREATE TABLE mesas (
     id_mesa INT AUTO_INCREMENT PRIMARY KEY,
     numero_mesa VARCHAR(10) NOT NULL UNIQUE, -- Ex: "5", "T1" (para esplanada), etc.
@@ -30,6 +36,16 @@ CREATE TABLE produtos (
     disponivel BOOLEAN NOT NULL DEFAULT TRUE,
     FOREIGN KEY (id_categoria) REFERENCES categorias_produto(id_categoria)
 ) ENGINE=InnoDB;
+
+
+
+
+-- preco: O tipo de dados DECIMAL é ideal para valores monetários, evitando problemas de arredondamento.
+
+-- disponivel: Permite retirar um produto do menu sem o apagar da base de dados.
+
+
+
 
 CREATE TABLE contas (
     id_conta INT AUTO_INCREMENT PRIMARY KEY,
@@ -64,3 +80,5 @@ CREATE TABLE linhas_pedido (
     FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido) ON DELETE CASCADE, -- Se o pedido for apagado, as linhas vão junto
     FOREIGN KEY (id_produto) REFERENCES produtos(id_produto)
 ) ENGINE=InnoDB;
+
+--preco_unitario: Garante que, mesmo que o preço do produto mude no futuro, o registo da venda mantém o valor correto da altura.
