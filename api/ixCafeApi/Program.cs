@@ -10,6 +10,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<EmpregadosRequests>();
 builder.Services.AddScoped<ProdutosRequests>();
 builder.Services.AddScoped<MesasRequests>();
+builder.Services.AddScoped<PedidoRequests>();
 
 builder.Services.AddSwaggerGen();
 
