@@ -15,8 +15,9 @@ namespace ixCafeApi.Controllers{
             _pedidoRequests = pedidoRequests;
         }
 
-        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //[ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         [HttpPost]
         [Route("api/pedido/pedir")]
         public async Task<IActionResult> Pedir(PedidoRequest pedidoRequest)

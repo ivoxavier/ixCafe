@@ -10,16 +10,14 @@ public class PedidoRequest
 
     public int IdMesa {get;set;}
 
-    public string DataHora {get;set;}
-
-    public List<PedidosList> Pedidos { get; set; }
+    public required List<PedidosList> Pedidos { get; set; }
 }
 
 public class PedidosList
 {
-    public int IdProduto { get; set; }
+    public required int IdProduto { get; set; }
 
-    public int Quantidade { get; set; }
+    public required int Quantidade { get; set; }
 
-    public string Observacoes { get; set; }
+    public string? Observacoes { get; set; }
 }
