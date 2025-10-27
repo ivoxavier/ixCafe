@@ -24,4 +24,8 @@ public class EmpregadoDesativarRequest
     [Required(ErrorMessage = "O Nome é obrigatório.")]
     [StringLength(35, ErrorMessage = "O Nome não pode ter mais de 35 caracteres.")]
     public required string Nome { get; set; }
+
+    [Required(ErrorMessage = "O token_role é obrigatório.")]
+    [Range(1, int.MaxValue, ErrorMessage = "token_role inválido.")]
+    public int TokenRole { get; set; }
 }

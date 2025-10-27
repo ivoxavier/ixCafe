@@ -64,6 +64,33 @@ namespace ixCafeApi.Calls.Empregados
 
         public async Task<object> Desativar(EmpregadoDesativarRequest empregadoDesativarRequest)
         {
+            var parameters = new DynamicParameters();
+
+            parameters.Add("p_nome", empregadoDesativarRequest.Nome);
+            parameters.Add("p_token_role", empregadoDesativarRequest.TokenRole);
+
+            await using (var connection = new MySqlConnection(_connectionString))
+            {
+
+                await connection.ExecuteAsync(
+                    "sp_DesativarEmpregado",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+            }
+
+            var errorCode = parameters.Get<int>("perrorCode");
+
+            if(errorCode != 0)
+            {
+                ErrorResponse errorResponse = new ErrorResponse
+                {
+                    ErrorCode = errorCode,
+                    ErrorMessage = parameters.Get<string>("perrorMessage")
+                };
+                return errorResponse;
+            }
+
             return new { Message = "Desativo!" };
         }
     }

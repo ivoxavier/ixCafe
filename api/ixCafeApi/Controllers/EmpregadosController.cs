@@ -52,7 +52,13 @@ namespace ixCafeApi.Controllers{
 
             var result = await _empregadosRequests.Desativar(empregadoDesativarRequest);
 
-            return Ok(result);
+            if (result is ErrorResponse error)
+            {
+
+                return NotFound();
+            }
+
+            return Ok();
         }
     }
 }
