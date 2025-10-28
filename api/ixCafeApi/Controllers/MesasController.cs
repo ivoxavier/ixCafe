@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using ixCafeApi.Calls.Mesas;
 using ixCafeApi.Models;
 
@@ -7,7 +8,7 @@ namespace ixCafeApi.Controllers{
     [ApiController]
     public class MesasController : ControllerBase{
 
-        private readonly MesasRequests _mesasRequests = new MesasRequests();
+        private readonly MesasRequests _mesasRequests;
 
 
         public MesasController(MesasRequests mesasRequests)
@@ -25,6 +26,12 @@ namespace ixCafeApi.Controllers{
             var result = await _mesasRequests.Criar(mesasCriarRequest); 
 
             
+            if (result is ErrorResponse error)
+            {
+
+                return Conflict(error);
+            }
+
             return Ok(result);
         }
 

@@ -10,7 +10,7 @@ public class MesasCriarRequest
     [StringLength(50, ErrorMessage = "A Localização não pode ter mais de 50 caracteres.")]
     public required string Localizacao { get; set; }
 
-    [Required(ErrorMessage = "A Quantidade é obrigatória.")]
-    public required int Quantidade { get; set; }
+    [Required(ErrorMessage = "A Capacidade é obrigatória.")]
+    public required int Capacidade { get; set; }
 
 }
