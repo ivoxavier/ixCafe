@@ -58,9 +58,9 @@ namespace ixCafeApi.Calls.Empregados
 
             return new { Message = "Acessos criados com sucesso!" };
         }
-   
-   
-        
+
+
+
 
         public async Task<object> Desativar(EmpregadoDesativarRequest empregadoDesativarRequest)
         {
@@ -81,7 +81,7 @@ namespace ixCafeApi.Calls.Empregados
 
             var errorCode = parameters.Get<int>("perrorCode");
 
-            if(errorCode != 0)
+            if (errorCode != 0)
             {
                 ErrorResponse errorResponse = new ErrorResponse
                 {
@@ -92,6 +92,42 @@ namespace ixCafeApi.Calls.Empregados
             }
 
             return new { Message = "Desativo!" };
+        }
+        
+
+        public async Task<object> Eliminar(string nomeEmpregado, string cargo)
+        {
+            var parameters = new DynamicParameters();
+
+            parameters.Add("p_nome", nomeEmpregado);
+            parameters.Add("p_cargo", cargo);
+            
+
+            parameters.Add("perrorCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            parameters.Add("perrorMessage", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
+
+            await using (var connection = new MySqlConnection(_connectionString))
+            {
+
+                await connection.ExecuteAsync(
+                    "sp_EliminarEmpregado",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+            }
+
+            var errorCode = parameters.Get<int>("perrorCode");
+
+            if (errorCode != 0)
+            {
+                ErrorResponse errorResponse = new ErrorResponse
+                {
+                    ErrorCode = errorCode,
+                    ErrorMessage = parameters.Get<string>("perrorMessage")
+                };
+                return errorResponse;
+            }
+            return new { Message = "Empregado eliminado com sucesso!" };
         }
     }
 }
