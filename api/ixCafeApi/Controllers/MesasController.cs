@@ -80,5 +80,25 @@ namespace ixCafeApi.Controllers{
             return Ok(result);
         }
 
+
+        [ProducesResponseType(typeof(ListaMesasResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet]
+        [Route("api/mesas/listar")]
+        public async Task<IActionResult> Listar ()
+        {
+            var result = await _mesasRequests.Listar();
+
+            if(result is ErrorResponse error)
+            {
+                return NotFound(error);
+            }
+
+
+            return Ok(result);
+
+
+        }
+
     }
 }
