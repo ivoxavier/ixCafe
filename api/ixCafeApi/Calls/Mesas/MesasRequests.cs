@@ -129,6 +129,42 @@ namespace ixCafeApi.Calls.Mesas
 
 
 
+        public async Task<object> Listar()
+        {
+            var parameters = new DynamicParameters();   
+            parameters.Add("perrorCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            parameters.Add("perrorMessage", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
+
+
+            IEnumerable<ListaMesasResponse> listaMesas;
+
+            await using (var connection = new MySqlConnection(_connectionString))
+            {
+
+                listaMesas = await connection.QueryAsync<ListaMesasResponse>(
+                    "sp_ListarMesas",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+            }
+
+            int errorCode = parameters.Get<int>("perrorCode");
+            
+
+            if (errorCode != 0)
+            {
+                
+                ErrorResponse errorResponse = new ErrorResponse
+                {
+                    ErrorCode = errorCode,
+                    ErrorMessage = parameters.Get<string>("perrorMessage")
+                };
+                return errorResponse;
+            }
+
+            return listaMesas;
+        }
+
 
     }
 }

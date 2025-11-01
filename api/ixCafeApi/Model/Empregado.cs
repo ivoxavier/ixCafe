@@ -29,3 +29,11 @@ public class EmpregadoDesativarRequest
     [Range(1, int.MaxValue, ErrorMessage = "token_role inválido.")]
     public int TokenRole { get; set; }
 }
+
+
+public class ListaEmpregadosResponse
+{
+    public required string Nome {get; set;}
+
+    public required string Cargo {get; set;}
+}

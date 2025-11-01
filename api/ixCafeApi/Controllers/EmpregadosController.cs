@@ -61,6 +61,9 @@ namespace ixCafeApi.Controllers{
             return Ok();
         }
         
+
+
+
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -80,5 +83,32 @@ namespace ixCafeApi.Controllers{
 
             return Ok(result);
         }
+
+
+
+
+        [ProducesResponseType(typeof(ListaEmpregadosResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet]
+        [Route("api/empregados/listar")]
+        public async Task<IActionResult> Listar ()
+        {
+            var result = await _empregadosRequests.Listar();
+
+            if(result is ErrorResponse error)
+            {
+                return NotFound(error);
+            }
+
+
+            return Ok(result);
+
+
+        }
+
+
+
+
+
     }
 }

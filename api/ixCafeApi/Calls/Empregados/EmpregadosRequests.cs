@@ -129,5 +129,44 @@ namespace ixCafeApi.Calls.Empregados
             }
             return new { Message = "Empregado eliminado com sucesso!" };
         }
+
+
+        public async Task<object> Listar()
+        {
+            var parameters = new DynamicParameters();   
+            parameters.Add("perrorCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            parameters.Add("perrorMessage", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
+
+
+            IEnumerable<ListaEmpregadosResponse> listaEmpregados;
+
+            await using (var connection = new MySqlConnection(_connectionString))
+            {
+
+                listaEmpregados = await connection.QueryAsync<ListaEmpregadosResponse>(
+                    "sp_ListarEmpregado",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+            }
+
+            int errorCode = parameters.Get<int>("perrorCode");
+            
+
+            if (errorCode != 0)
+            {
+                
+                ErrorResponse errorResponse = new ErrorResponse
+                {
+                    ErrorCode = errorCode,
+                    ErrorMessage = parameters.Get<string>("perrorMessage")
+                };
+                return errorResponse;
+            }
+
+            return listaEmpregados;
+        }
+
+
     }
 }
