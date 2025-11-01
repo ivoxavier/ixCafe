@@ -15,9 +15,8 @@ namespace ixCafeApi.Authentication
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
-            ISystemClock clock,
             ITokenValidationService tokenService)
-            : base(options, logger, encoder, clock)
+            : base(options, logger, encoder)
         {
             _tokenService = tokenService;
         }
@@ -25,18 +24,18 @@ namespace ixCafeApi.Authentication
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             
-            if (!Request.Headers.ContainsKey("Authorization"))
+            if (!Request.Headers.TryGetValue("Authorization", out var authorizationHeaderValue))
             {
+                
                 return AuthenticateResult.NoResult();
             }
 
-            AuthenticationHeaderValue authHeader;
-            try
+            
+            AuthenticationHeaderValue? authHeader;
+            
+            if (!AuthenticationHeaderValue.TryParse(authorizationHeaderValue.FirstOrDefault(), out authHeader))
             {
-                authHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
-            }
-            catch
-            {
+                
                 return AuthenticateResult.Fail("Header de Autorização mal formatado.");
             }
 
@@ -64,7 +63,7 @@ namespace ixCafeApi.Authentication
             var claims = new List<Claim>
             {
                 
-                new Claim(ClaimTypes.NameIdentifier, $"user_token_{token.Substring(0, 5)}")
+                new Claim(ClaimTypes.NameIdentifier, $"user_token_{token.Substring(0, Math.Min(token.Length, 5))}")
             };
 
             
