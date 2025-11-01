@@ -29,5 +29,24 @@ namespace ixCafeApi.Controllers{
             return Ok(result);
         }
 
+        [ProducesResponseType(typeof(ListarPedidosResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet]
+        [Route("api/pedidos/listar")]
+        public async Task<IActionResult> Listar ()
+        {
+            var result = await _pedidoRequests.Listar();
+
+            if(result is ErrorResponse error)
+            {
+                return NotFound(error);
+            }
+
+
+            return Ok(result);
+
+
+        }
+
     }
 }

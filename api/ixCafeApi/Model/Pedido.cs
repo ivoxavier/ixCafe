@@ -21,3 +21,13 @@ public class PedidosList
 
     public string? Observacoes { get; set; }
 }
+
+
+public class ListarPedidosResponse
+{
+    public int IdEmpregado {get;set;}
+    public int IdMesa {get;set;}
+    public string PedidoData {get;set;}
+    public required List<PedidosList> Pedidos { get; set; }
+
+}
