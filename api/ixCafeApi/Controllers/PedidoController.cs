@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using ixCafeApi.Calls.Mesas;
+using ixCafeApi.Calls.Pedido;
 using ixCafeApi.Models;
 
 namespace ixCafeApi.Controllers{
@@ -16,15 +16,19 @@ namespace ixCafeApi.Controllers{
         }
 
         //[ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         [HttpPost]
         [Route("api/pedido/pedir")]
         public async Task<IActionResult> Pedir(PedidoRequest pedidoRequest)
         {
-        
-            var result = await _pedidoRequests.Pedido(pedidoRequest);
 
+            var result = await _pedidoRequests.Pedido(pedidoRequest);
+            
+            if(result is ErrorResponse error)
+            {
+                return Conflict(error);
+            }
             
             return Ok(result);
         }
