@@ -31,9 +31,25 @@ public class EmpregadoDesativarRequest
 }
 
 
+
+
+
+public class LoginResponse
+{
+    
+    public required string Nome { get; set; }
+
+    public required long IdEmpregado { get; set; }
+}
+
+
+
+
+
+
 public class ListaEmpregadosResponse
 {
-    public required string Nome {get; set;}
+    public required string Nome { get; set; }
 
-    public required string Cargo {get; set;}
+    public required string Cargo { get; set; }
 }
