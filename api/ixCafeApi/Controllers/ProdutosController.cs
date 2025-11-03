@@ -7,13 +7,37 @@ namespace ixCafeApi.Controllers{
     [ApiController]
     public class ProdutosController : ControllerBase{
 
-        private readonly ProdutosRequests _produtosRequests = new ProdutosRequests();
+        private readonly ProdutosRequests _produtosRequests;
 
 
         public ProdutosController(ProdutosRequests produtosRequests)
         {
             _produtosRequests = produtosRequests;
         }
+
+
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpPost]
+        [Route("api/produtos/novacategoria")]
+        public async Task<IActionResult> NovaCategoria(string categoria)
+        {
+
+            var result = await _produtosRequests.NovaCategoria(categoria); 
+            
+
+            if(result is ErrorResponse error)
+            {
+                return Conflict(error);
+            }
+
+            
+            return Ok(result);
+        }
+
+
+
+
 
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
