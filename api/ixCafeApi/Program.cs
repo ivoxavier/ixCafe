@@ -5,6 +5,8 @@ using ixCafeApi.Services;
 using ixCafeApi.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.OpenApi.Models;
+using ixCafeApi.Models;
+using ixCafeApi.Calls.Pedido;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
