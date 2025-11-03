@@ -62,17 +62,15 @@ namespace ixCafeApi.Controllers{
         }
         
 
-
-
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpDelete]
         [Route("api/empregados/eliminar")]
-        public async Task<IActionResult> Eliminar(string nomeEmpregado, string cargo)
+        public async Task<IActionResult> Eliminar(string nomeEmpregado, int token_role)
         {
 
-            var result = await _empregadosRequests.Eliminar(nomeEmpregado,cargo);
+            var result = await _empregadosRequests.Eliminar(nomeEmpregado,token_role);
 
 
             if (result is ErrorResponse error)
@@ -83,6 +81,29 @@ namespace ixCafeApi.Controllers{
 
             return Ok(result);
         }
+
+
+
+        [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet]
+        [Route("api/empregados/login")]
+        public async Task<IActionResult> Login (string nomeEmpregado, string pin,int token_role)
+        {
+            var result = await _empregadosRequests.Login(nomeEmpregado,pin,token_role);
+
+            if(result is ErrorResponse error)
+            {
+                return NotFound(error);
+            }
+
+
+            return Ok(result);
+
+
+        }
+
+
 
 
 

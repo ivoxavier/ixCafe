@@ -95,14 +95,14 @@ namespace ixCafeApi.Calls.Empregados
         }
         
 
-        public async Task<object> Eliminar(string nomeEmpregado, string cargo)
+        public async Task<object> Eliminar(string nomeEmpregado, int token_role)
         {
             var parameters = new DynamicParameters();
 
             parameters.Add("p_nome", nomeEmpregado);
-            parameters.Add("p_cargo", cargo);
+            parameters.Add("p_token_role", token_role);
             
-
+            
             parameters.Add("perrorCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
             parameters.Add("perrorMessage", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
 
@@ -131,12 +131,85 @@ namespace ixCafeApi.Calls.Empregados
         }
 
 
-        public async Task<object> Listar()
+
+         public async Task<object> Login(string nomeEmpregado, string pin,int token_role)
         {
-            var parameters = new DynamicParameters();   
+            
+            
+            
+            var parameters = new DynamicParameters();
+
+
+
+
+            parameters.Add("p_nome", nomeEmpregado);
+            parameters.Add("p_token_role", token_role);
+
+
+            parameters.Add("pidEmpregado", dbType: DbType.Int64, direction: ParameterDirection.Output);
+            parameters.Add("pPinAcesso", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
             parameters.Add("perrorCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
             parameters.Add("perrorMessage", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
 
+            await using (var connection = new MySqlConnection(_connectionString))
+            {
+
+                await connection.ExecuteAsync(
+                    "sp_login",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+            }
+
+            var errorCode = parameters.Get<int>("perrorCode");
+
+            if (errorCode != 0)
+            {
+                ErrorResponse errorResponse = new ErrorResponse
+                {
+                    ErrorCode = errorCode,
+                    ErrorMessage = parameters.Get<string>("perrorMessage")
+                };
+                return errorResponse;
+            }
+
+        
+            string storedHash = parameters.Get<string>("pPinAcesso");
+
+   
+            bool isPinValid = BCrypt.Net.BCrypt.Verify(pin, storedHash);
+
+            if (!isPinValid)
+            {
+                
+                ErrorResponse errorResponse = new ErrorResponse
+                {
+                    ErrorCode = 98, 
+                    ErrorMessage = "Erro: Credenciais inválidas"
+                };
+                return errorResponse;
+            }
+
+            LoginResponse sucessResponse = new LoginResponse
+            {
+                IdEmpregado = parameters.Get<long>("pidEmpregado"),
+                Nome = nomeEmpregado
+            };
+
+            return sucessResponse;
+        }
+
+
+
+
+
+
+
+
+
+
+        public async Task<object> Listar()
+        {
 
             IEnumerable<ListaEmpregadosResponse> listaEmpregados;
 
@@ -145,21 +218,20 @@ namespace ixCafeApi.Calls.Empregados
 
                 listaEmpregados = await connection.QueryAsync<ListaEmpregadosResponse>(
                     "sp_ListarEmpregado",
-                    parameters,
                     commandType: CommandType.StoredProcedure
                 );
             }
 
-            int errorCode = parameters.Get<int>("perrorCode");
-            
 
-            if (errorCode != 0)
+
+
+            if (listaEmpregados.Count() == 0)
             {
-                
+
                 ErrorResponse errorResponse = new ErrorResponse
                 {
-                    ErrorCode = errorCode,
-                    ErrorMessage = parameters.Get<string>("perrorMessage")
+                    ErrorCode = 99,
+                    ErrorMessage = "Sem Resultados!"
                 };
                 return errorResponse;
             }
