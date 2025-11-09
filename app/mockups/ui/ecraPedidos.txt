@@ -1,0 +1,11 @@
+"Gera um ecrã de interface para uma aplicação POS (Ponto de Venda) num tablet Android, destinada a um restaurante. O design deve ser moderno e usar um tema escuro (dark mode).
+
+O ecrã deve ter três colunas:
+
+Coluna 1 (Esquerda): Uma lista vertical de categorias de produtos (ex: 'Bebidas', 'Cafetaria', 'Sobremesas').
+
+Coluna 2 (Centro): Uma grelha (grid) que mostra os cartões dos produtos da categoria selecionada. Cada cartão deve ter o nome do produto e o preço.
+
+Coluna 3 (Direita): Um resumo do "Pedido Atual". Deve listar os itens adicionados, a quantidade de cada um e o preço total por linha. No fundo desta coluna, deve mostrar o 'Subtotal', 'IVA' e 'Total' do pedido.
+
+No rodapé da coluna 3, adiciona um botão principal de cor verde com o texto 'Enviar Pedido'."
