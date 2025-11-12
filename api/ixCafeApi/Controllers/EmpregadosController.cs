@@ -108,11 +108,11 @@ namespace ixCafeApi.Controllers{
 
 
 
-        [ProducesResponseType(typeof(ListaEmpregadosResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<ListaEmpregadosResponse>), 200)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet]
         [Route("api/empregados/listar")]
-        public async Task<IActionResult> Listar ()
+        public async Task<ActionResult<IEnumerable<ListaEmpregadosResponse>>> Listar ()
         {
             var result = await _empregadosRequests.Listar();
 
