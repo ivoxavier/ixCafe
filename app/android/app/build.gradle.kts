@@ -21,13 +21,19 @@ android {
     }
 
     buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+        debug{
+            //onePlus6T hotspot
+            //buildConfigField("String", "BASE_URL", "\"http://10.41.253.251:7281/\"")
+
+            buildConfigField("String", "BASE_URL", "\"http://192.168.1.73:7281/\"")
         }
+        release{
+
+            buildConfigField("String", "BASE_URL", "\"http://192.168.1.73:7281/\"")
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -38,6 +44,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
