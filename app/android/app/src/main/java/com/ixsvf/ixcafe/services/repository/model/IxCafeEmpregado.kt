@@ -15,3 +15,11 @@ data class IxCafeLoginResponse(
     val nome: String,
     val idEmpregado: Int
 )
+
+
+
+@Serializable
+data class ListaEmpregadosResponse(
+    val nome: String,
+    val cargo: String
+)
