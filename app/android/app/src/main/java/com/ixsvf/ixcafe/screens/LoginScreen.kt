@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -41,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ixsvf.ixcafe.BuildConfig
 import com.ixsvf.ixcafe.R
+import com.ixsvf.ixcafe.constants.IxCafeConstants
 import com.ixsvf.ixcafe.screens.components.HorizontalSpace
 import com.ixsvf.ixcafe.screens.components.LargeTitleText
 import com.ixsvf.ixcafe.screens.components.MediumBodyText
@@ -59,6 +62,10 @@ fun LoginScreen(
     onRetry: () -> Unit
 ) {
 
+    val demoProfile = UserProfile(
+        name = IxCafeConstants.APP_SETTINGS.DEMO_KEY,
+        role = "Empregado"
+    )
 
     Box(modifier = modifier.fillMaxSize()) {
 
@@ -97,6 +104,8 @@ fun LoginScreen(
                 VerticalSpace(48)
 
                 when{
+
+                    // Estado 1: A carregar
                     uiState.isLoading -> {
                         CircularProgressIndicator(
                             modifier = Modifier.padding(top = 32.dp),
@@ -104,6 +113,29 @@ fun LoginScreen(
                         )
                     }
 
+
+                    // Estado 2: Sucesso com perfis reais
+                    uiState.profiles.isNotEmpty() -> {
+                        ProfileList(
+                            profiles = uiState.profiles,
+                            onProfileSelected = onProfileSelected
+                        )
+                    }
+
+
+
+                    // Estado 3: Modo DEBUG (Apanha 'error' ou 'isEmpty')
+                    // Se não estamos a carregar e não temos perfis,
+                    // mostramos o perfil DEMO em vez do erro.
+                    BuildConfig.DEBUG -> {
+                        ProfileList(
+                            profiles = listOf(demoProfile),
+                            onProfileSelected = onProfileSelected
+                        )
+                    }
+
+
+                    // Estado 4: Modo RELEASE com Erro
                     uiState.error != null -> {
                         ErrorState(
                             message = uiState.error,
@@ -111,10 +143,8 @@ fun LoginScreen(
                         )
                     }
 
-                    uiState.profiles.isEmpty() -> {
-                        EmptyState(message = stringResource(R.string.login_screen_no_users))
-                    }
-
+                    // Estado 5: Modo RELEASE com lista vazia
+                    // (profiles.isEmpty() e error == null)
                     else -> {
                         ProfileList(
                             profiles = uiState.profiles,
@@ -224,7 +254,7 @@ fun ProfileListItem(
         }
 
         Icon(
-            imageVector = Icons.Default.Done,
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
             tint = Color.Gray,
             modifier = Modifier.size(20.dp)
