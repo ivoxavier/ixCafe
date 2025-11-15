@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">ixCafe</string>
+    <string name="login_screen_select_profile">Select your profile to login</string>
+    <string name="login_screen_app_version">Version</string>
+    <string name="login_screen_settings">Settings</string>
+    <string name="login_screen_no_users">No Users Found</string>
+    <string name="login_screen_retry">Retry</string>
 </resources>

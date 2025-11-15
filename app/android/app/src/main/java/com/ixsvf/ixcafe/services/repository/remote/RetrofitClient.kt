@@ -1,5 +1,6 @@
 package com.ixsvf.ixcafe.services.repository.remote
 
+import com.ixsvf.ixcafe.constants.IxCafeConstants
 import com.ixsvf.ixcafe.services.repository.Settings
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
@@ -9,6 +10,7 @@ import retrofit2.Retrofit
 
 object RetrofitClient {
 
+    // Configuração do parser JSON para ignorar chaves desconhecidas na resposta da API
     private val json = Json {
         ignoreUnknownKeys = true
     }
@@ -23,7 +25,7 @@ object RetrofitClient {
 
         // Constrói a instância do Retrofit
         retrofit = Retrofit.Builder()
-            .baseUrl(MMKConstants.ENDPOINTS.BASE_URL)
+            .baseUrl(IxCafeConstants.ENDPOINTS_ROUTES.BASE_URL)
             .client(httpClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()

@@ -44,4 +44,16 @@ class Settings(private val context: Context) {
             }
         }
     }
+
+    suspend fun fetchAuthToken(): String? {
+        return context.dataStore.data.catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }.map { preferences ->
+            preferences[com.ixsvf.ixcafe.services.repository.Settings.Companion.AUTH_TOKEN_KEY]
+        }.first()
+    }
 }

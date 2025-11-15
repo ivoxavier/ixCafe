@@ -5,11 +5,13 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 
+
 class AuthInterceptor(private val settings: Settings) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        // 1. Usamos runBlocking para chamar a função suspend a partir de um contexto síncrono
-        val token = runBlocking {
+
+
+val token = runBlocking {
             settings.fetchAuthToken()
         }
 
@@ -22,5 +24,6 @@ class AuthInterceptor(private val settings: Settings) : Interceptor {
 
 
         return chain.proceed(requestBuilder.build())
+
     }
 }

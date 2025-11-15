@@ -1,5 +1,6 @@
 package com.ixsvf.ixcafe.screens
 
+import android.provider.Settings.Global.getString
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,11 +17,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,89 +35,149 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ixsvf.ixcafe.BuildConfig
+import com.ixsvf.ixcafe.R
+import com.ixsvf.ixcafe.screens.components.HorizontalSpace
+import com.ixsvf.ixcafe.screens.components.LargeTitleText
+import com.ixsvf.ixcafe.screens.components.MediumBodyText
+import com.ixsvf.ixcafe.screens.components.VerticalSpace
+import com.ixsvf.ixcafe.services.repository.model.UserProfile
+import com.ixsvf.ixcafe.viewmodel.LoginUiState
 
-
-data class UserProfile(
-    val id: String,
-    val name: String,
-    val role: String
-)
 
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier,
-    onProfileSelected: (UserProfile) -> Unit) {
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    uiState: LoginUiState,
+    onProfileSelected: (UserProfile) -> Unit,
+    onSettingsClicked: () -> Unit,
+    onRetry: () -> Unit
+) {
 
-    val profiles = listOf(
-        UserProfile("1", "Ana Moura", "Empregada de Mesa"),
-        UserProfile("2", "João Silva", "Empregado de Mesa"),
-        UserProfile("3", "Maria Santos", "Gerente"),
-        UserProfile("4", "Pedro Costa", "Empregado de Mesa")
-    )
 
-    Surface(modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background)
-    {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+    Box(modifier = modifier.fillMaxSize()) {
+
+
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
         )
         {
-            Spacer(modifier = Modifier.height(100.dp))
-
-            Icon(
-                imageVector = Icons.Default.ShoppingCart,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "Restaurante O Sabor",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Selecione o seu perfil para iniciar sessão",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(48.dp))
-
-            Surface(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp)),
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column {
-                    profiles.forEachIndexed { index, profile ->
-                        ProfileListItem(
-                            profile = profile,
-                            onClick = { onProfileSelected(profile) }
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            )
+            {
+
+                VerticalSpace(100)
+
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(32.dp)
+                )
+
+                VerticalSpace(12)
+
+                LargeTitleText(stringResource(R.string.app_name) + ": " + BuildConfig.CLIENT_NAME)
+
+                VerticalSpace(8)
+
+                MediumBodyText(stringResource(R.string.login_screen_select_profile))
+
+                VerticalSpace(48)
+
+                when{
+                    uiState.isLoading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(top = 32.dp),
+                            color = MaterialTheme.colorScheme.primary
                         )
-                        if (index < profiles.lastIndex) {
-                            HorizontalDivider(
-                                color = Color(0xFF2A2A2A), // Cor sutil do divisor
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                        }
                     }
+
+                    uiState.error != null -> {
+                        ErrorState(
+                            message = uiState.error,
+                            onRetry = onRetry
+                        )
+                    }
+
+                    uiState.profiles.isEmpty() -> {
+                        EmptyState(message = stringResource(R.string.login_screen_no_users))
+                    }
+
+                    else -> {
+                        ProfileList(
+                            profiles = uiState.profiles,
+                            onProfileSelected = onProfileSelected
+                        )
+                    }
+                }
+
+                AppVersion(Modifier.weight(1f))
+
+            }
+
+        }
+
+
+        // (Como filho direto do Box, ele vai sobrepor-se)
+        IconButton(
+            onClick = onSettingsClicked,
+            modifier = Modifier
+                .align(Alignment.TopEnd) // Alinha ao canto superior direito
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = stringResource(R.string.login_screen_settings),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+
+
+@Composable
+private fun ProfileList(
+    profiles: List<UserProfile>,
+    onProfileSelected: (UserProfile) -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp)),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column {
+            profiles.forEachIndexed { index, profile ->
+                ProfileListItem(
+                    profile = profile,
+                    onClick = { onProfileSelected(profile) }
+                )
+                if (index < profiles.lastIndex) {
+                    HorizontalDivider(
+                        color = Color(0xFF2A2A2A),
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
                 }
             }
         }
-
     }
-
 }
+
 
 @Composable
 fun ProfileListItem(
@@ -141,9 +207,9 @@ fun ProfileListItem(
             )
         }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        HorizontalSpace(16)
 
-        // --- Nome e Cargo ---
+
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.Center
@@ -154,14 +220,9 @@ fun ProfileListItem(
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Text(
-                text = profile.role,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
-            )
+            MediumBodyText(profile.role)
         }
 
-        // --- Seta (Chevron) ---
         Icon(
             imageVector = Icons.Default.Done,
             contentDescription = null,
@@ -169,4 +230,75 @@ fun ProfileListItem(
             modifier = Modifier.size(20.dp)
         )
     }
+}
+
+@Composable
+private fun EmptyState(message: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.AccountBox,
+            contentDescription = null,
+            tint = Color.Gray,
+            modifier = Modifier.size(48.dp)
+        )
+        VerticalSpace(16)
+        MediumBodyText(text = message)
+    }
+}
+
+
+
+@Composable
+private fun ErrorState(message: String, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Warning,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.error,
+            modifier = Modifier.size(48.dp)
+        )
+        VerticalSpace(16)
+        Text(
+            text = message,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        VerticalSpace(16)
+        // Botão simples para tentar novamente
+        Text(
+            text = stringResource(R.string.login_screen_retry),
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { onRetry() }
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+    }
+}
+
+
+@Composable
+fun AppVersion(modifier: Modifier)
+{
+    Spacer(modifier = modifier)
+    Text(
+        text =  stringResource(R.string.login_screen_app_version) + ": " + BuildConfig.VERSION_NAME,
+        style = MaterialTheme.typography.bodySmall,
+        color = Color.Gray,
+        modifier = Modifier.padding(bottom = 16.dp)
+    )
+
 }

@@ -26,10 +26,12 @@ android {
             //buildConfigField("String", "BASE_URL", "\"http://10.41.253.251:7281/\"")
 
             buildConfigField("String", "BASE_URL", "\"http://192.168.1.73:7281/\"")
+            buildConfigField("String", "CLIENT_NAME", "\"Nome do Cliente\"")
         }
         release{
 
             buildConfigField("String", "BASE_URL", "\"http://192.168.1.73:7281/\"")
+            buildConfigField("String", "CLIENT_NAME", "\"Nome do Cliente\"")
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
