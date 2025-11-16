@@ -1,5 +1,6 @@
 package com.ixsvf.ixcafe.screens.demo
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,12 +14,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack // <-- IMPORT ADICIONADO
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Clear
-
 import androidx.compose.material.icons.filled.Close
-
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -79,7 +78,8 @@ private const val IVA_RATE = 0.23
 @Composable
 fun OrderScreenDemo(
     tableId: String,
-    onNavigateBackToTables: () -> Unit // <-- Parâmetro para o botão "Voltar"
+    onNavigateBackToTables: () -> Unit,
+    onCloseAccount: () -> Unit // --- NOVO: Ação para fechar a conta ---
 ) {
     // --- ESTADO DO ECRÃ ---
     var selectedCategoryId by remember { mutableStateOf(demoCategories.first().id) }
@@ -157,6 +157,13 @@ fun OrderScreenDemo(
                         if (!sheetState.isVisible) showBottomSheet = false
                     }
                 },
+                onConfirmOrder = {
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        if (!sheetState.isVisible) showBottomSheet = false
+                    }
+                    println("Pedido confirmado! (API para cozinha seria chamada aqui)")
+                },
+                onCloseAccount = onCloseAccount, // --- NOVO: Passar a ação para o sheet ---
                 onIncrement = onIncrementItem,
                 onDecrement = onDecrementItem,
                 onRemove = onRemoveItem
@@ -177,7 +184,6 @@ fun OrderScreenDemo(
                         )
                     }
                 },
-                // --- BOTÃO VOLTAR ADICIONADO AQUI ---
                 navigationIcon = {
                     IconButton(onClick = onNavigateBackToTables) {
                         Icon(
@@ -351,6 +357,8 @@ private fun OrderSummarySheetContent(
     iva: Double,
     total: Double,
     onClose: () -> Unit,
+    onConfirmOrder: () -> Unit,
+    onCloseAccount: () -> Unit, // --- NOVO PARÂMETRO ---
     onIncrement: (DemoCartItem) -> Unit,
     onDecrement: (DemoCartItem) -> Unit,
     onRemove: (DemoCartItem) -> Unit
@@ -358,11 +366,11 @@ private fun OrderSummarySheetContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
         // --- Cabeçalho do Sheet ---
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -412,7 +420,39 @@ private fun OrderSummarySheetContent(
             VerticalSpace(8)
             PriceLine(label = "Total", amount = total, isTotal = true)
         }
-        VerticalSpace(16)
+
+        // --- Botão de Confirmar Pedido ---
+        Button(
+            onClick = onConfirmOrder,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp), // Espaço acima
+            colors = ButtonDefaults.buttonColors(
+                containerColor = AvailableGreen
+            )
+        ) {
+            Text(
+                text = "Confirmar Pedido",
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
+
+        // --- NOVO: Botão de Fechar Conta ---
+        OutlinedButton(
+            onClick = onCloseAccount,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 16.dp), // Espaço entre botões e abaixo
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant)
+        ) {
+            Text(
+                text = "Fechar Conta",
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant, // Cor do texto
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
     }
 }
 
@@ -578,7 +618,38 @@ private fun OrderScreenDemoPreview() {
     IxCafeTheme {
         OrderScreenDemo(
             tableId = "05",
-            onNavigateBackToTables = {}
+            onNavigateBackToTables = {},
+            onCloseAccount = {} // --- NOVO: Adicionado ao Preview ---
         )
+    }
+}
+
+@Preview(showBackground = true, name = "Order Summary Sheet (Dark)")
+@Composable
+private fun OrderSummarySheetPreview() {
+    val items = listOf(
+        DemoCartItem(DemoProduct("1", "Ice Tea", 2.30), 1),
+        DemoCartItem(DemoProduct("2", "Vinho Tinto (copo)", 3.50), 1),
+        DemoCartItem(DemoProduct("3", "Sumo Laranja", 3.00), 1)
+    )
+    val subtotal = items.sumOf { it.product.price * it.quantity }
+    val iva = subtotal * IVA_RATE
+    val total = subtotal + iva
+
+    IxCafeTheme(darkTheme = true) {
+        Surface {
+            OrderSummarySheetContent(
+                cartItems = items,
+                subtotal = subtotal,
+                iva = iva,
+                total = total,
+                onClose = { },
+                onConfirmOrder = { },
+                onCloseAccount = { }, // --- NOVO: Adicionado ao Preview ---
+                onIncrement = {},
+                onDecrement = {},
+                onRemove = {}
+            )
+        }
     }
 }
