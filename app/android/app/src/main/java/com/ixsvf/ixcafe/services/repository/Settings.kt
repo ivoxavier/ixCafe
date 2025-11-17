@@ -15,15 +15,15 @@ import kotlinx.coroutines.flow.map
 import java.io.IOException
 
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name= IxCafeConstants.APP_SETTINGS.SETTINGS_FILE_NAME)
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name= IxCafeConstants.APPSETTINGS.SETTINGS_FILE_NAME)
 class Settings(private val context: Context) {
 
 
     private companion object {
-        val IS_FIRST_RUN_KEY = booleanPreferencesKey(IxCafeConstants.APP_SETTINGS.IS_FIRST_RUN)
-        val AUTH_TOKEN_KEY = stringPreferencesKey(IxCafeConstants.APP_SETTINGS.AUTH_TOKEN_KEY)
-        val USER_NAME_KEY = stringPreferencesKey(IxCafeConstants.APP_SETTINGS.USER_NAME_KEY)
-        val LOGIN_KEY = stringPreferencesKey(IxCafeConstants.APP_SETTINGS.LOGIN_KEY)
+        val IS_FIRST_RUN_KEY = booleanPreferencesKey(IxCafeConstants.APPSETTINGS.IS_FIRST_RUN)
+        val AUTH_TOKEN_KEY = stringPreferencesKey(IxCafeConstants.APPSETTINGS.AUTH_TOKEN_KEY)
+        val USER_NAME_KEY = stringPreferencesKey(IxCafeConstants.APPSETTINGS.USER_NAME_KEY)
+        val LOGIN_KEY = stringPreferencesKey(IxCafeConstants.APPSETTINGS.LOGIN_KEY)
     }
 
     suspend fun fetchLogin(): String? {

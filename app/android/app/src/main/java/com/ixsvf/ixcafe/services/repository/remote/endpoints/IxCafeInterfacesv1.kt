@@ -8,11 +8,11 @@ import retrofit2.http.Query
 
 interface IxCafeApiInterface {
 
-    @GET(IxCafeConstants.ENDPOINTS_ROUTES.LISTAR_EMPREGADOS)
+    @GET(IxCafeConstants.ENDPOINTSROUTES.LISTAR_EMPREGADOS)
     suspend fun listarEmpregados(): List<ListaEmpregadosResponse>
 
 
-    @GET(IxCafeConstants.ENDPOINTS_ROUTES.LOGIN)
+    @GET(IxCafeConstants.ENDPOINTSROUTES.LOGIN)
     suspend fun login(
         @Query("nome") nome: String,
         @Query("pin") pin: String,

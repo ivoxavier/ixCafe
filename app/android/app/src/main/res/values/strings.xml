@@ -1,8 +1,19 @@
 <resources>
     <string name="app_name">ixCafe</string>
-    <string name="login_screen_select_profile">Select your profile to login</string>
+    <string name="login_screen_select_profile">Select Your Profile To Login</string>
     <string name="login_screen_app_version">Version</string>
     <string name="login_screen_settings">Settings</string>
     <string name="login_screen_no_users">No Users Found</string>
     <string name="login_screen_retry">Retry</string>
+    <string name="lbl_profile">Profile</string>
+    <string name="lbl_wrong_pin">Wrong PIN!</string>
+    <string name="lbl_enter_pin">Enter Your PIN!</string>
+    <string name="lbl_get_back">Back</string>
+    <string name="lbl_order_list">Order List</string>
+    <string name="lbl_add">Add</string>
+    <string name="lbl_check_order">Verify Order</string>
+    <string name="lbl_current_order">Current Order</string>
+    <string name="lbl_close">Close</string>
+    <string name="lbl_subtotal">Subtotal</string>
+    <string name="lbl_total">Total</string>
 </resources>

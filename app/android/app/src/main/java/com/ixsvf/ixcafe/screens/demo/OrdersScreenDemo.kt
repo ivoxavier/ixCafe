@@ -13,11 +13,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,14 +28,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ixsvf.ixcafe.BuildConfig
 import com.ixsvf.ixcafe.screens.components.AvailableGreen
 import com.ixsvf.ixcafe.screens.components.HorizontalSpace
 import com.ixsvf.ixcafe.screens.components.OnAvailableGreen
 import com.ixsvf.ixcafe.screens.components.VerticalSpace
-import com.ixsvf.ixcafe.ui.theme.IxCafeTheme
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
@@ -42,10 +42,16 @@ import java.util.Locale
 // --- MODELOS DE DADOS (DEMO) ---
 private data class DemoCategory(val id: String, val name: String, val icon: ImageVector)
 private data class DemoProduct(val id: String, val name: String, val price: Double)
-private data class DemoCartItem(val product: DemoProduct, val quantity: Int)
+// --- ALTERADO: Adicionado campo de observação ---
+private data class DemoCartItem(
+    val product: DemoProduct,
+    val quantity: Int,
+    val observation: String? = null
+)
 
 // --- DADOS FALSOS (Constantes) ---
 private val demoCategories = listOf(
+    // --- ALTERADO: Ícones corretos ---
     DemoCategory("bebidas", "Bebidas", Icons.Default.ShoppingCart),
     DemoCategory("cafetaria", "Cafetaria", Icons.Default.ShoppingCart),
     DemoCategory("sobremesas", "Sobremesas", Icons.Default.ShoppingCart)
@@ -79,7 +85,7 @@ private const val IVA_RATE = 0.23
 fun OrderScreenDemo(
     tableId: String,
     onNavigateBackToTables: () -> Unit,
-    onCloseAccount: () -> Unit // --- NOVO: Ação para fechar a conta ---
+    onCloseAccount: () -> Unit
 ) {
     // --- ESTADO DO ECRÃ ---
     var selectedCategoryId by remember { mutableStateOf(demoCategories.first().id) }
@@ -87,9 +93,10 @@ fun OrderScreenDemo(
 
     val cartItems = remember {
         mutableStateListOf(
-            DemoCartItem(demoProducts["bebidas"]!!.find { it.name == "Ice Tea" }!!, 1),
-            DemoCartItem(demoProducts["bebidas"]!!.find { it.name == "Vinho Tinto (copo)" }!!, 1),
-            DemoCartItem(demoProducts["bebidas"]!!.find { it.name == "Sumo Laranja" }!!, 1)
+            // --- ALTERADO: Adicionado 'null' para observação ---
+            DemoCartItem(demoProducts["bebidas"]!!.find { it.name == "Ice Tea" }!!, 1, null),
+            DemoCartItem(demoProducts["bebidas"]!!.find { it.name == "Vinho Tinto (copo)" }!!, 1, null),
+            DemoCartItem(demoProducts["bebidas"]!!.find { it.name == "Sumo Laranja" }!!, 1, null)
         )
     }
 
@@ -97,6 +104,9 @@ fun OrderScreenDemo(
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
+
+    // --- NOVO: Estado para o Dialog de Observação ---
+    var editingItem by remember { mutableStateOf<DemoCartItem?>(null) }
 
     // --- ESTADO DERIVADO (Calculado automaticamente) ---
     val cartCount by remember { derivedStateOf { cartItems.sumOf { it.quantity } } }
@@ -107,12 +117,14 @@ fun OrderScreenDemo(
 
     // --- LÓGICA DE MANIPULAÇÃO DO CARRINHO ---
     val onAddProduct: (DemoProduct) -> Unit = { product ->
-        val index = cartItems.indexOfFirst { it.product.id == product.id }
+        // --- ALTERADO: Apenas agrupa itens sem observação ---
+        val index = cartItems.indexOfFirst { it.product.id == product.id && it.observation == null }
         if (index != -1) {
             val oldItem = cartItems[index]
             cartItems[index] = oldItem.copy(quantity = oldItem.quantity + 1)
         } else {
-            cartItems.add(DemoCartItem(product, 1))
+            // Adiciona como novo item
+            cartItems.add(DemoCartItem(product, 1, null))
         }
     }
 
@@ -138,8 +150,29 @@ fun OrderScreenDemo(
         cartItems.remove(item)
     }
 
+    // --- NOVO: Lógica para atualizar a observação ---
+    val onUpdateObservation: (DemoCartItem, String) -> Unit = { item, observation ->
+        val index = cartItems.indexOf(item)
+        if (index != -1) {
+            val newObservation = observation.trim().ifBlank { null }
+            cartItems[index] = item.copy(observation = newObservation)
+        }
+    }
+
 
     // --- UI ---
+
+    // --- NOVO: Dialog para adicionar observação ---
+    if (editingItem != null) {
+        AddObservationDialog(
+            item = editingItem!!,
+            onDismiss = { editingItem = null },
+            onConfirm = { item, observation ->
+                onUpdateObservation(item, observation)
+                editingItem = null
+            }
+        )
+    }
 
     if (showBottomSheet) {
         ModalBottomSheet(
@@ -163,10 +196,13 @@ fun OrderScreenDemo(
                     }
                     println("Pedido confirmado! (API para cozinha seria chamada aqui)")
                 },
-                onCloseAccount = onCloseAccount, // --- NOVO: Passar a ação para o sheet ---
+                onCloseAccount = onCloseAccount,
                 onIncrement = onIncrementItem,
                 onDecrement = onDecrementItem,
-                onRemove = onRemoveItem
+                onRemove = onRemoveItem,
+                onEditObservation = { item -> // --- NOVO: Passa a ação ---
+                    editingItem = item
+                }
             )
         }
     }
@@ -176,7 +212,11 @@ fun OrderScreenDemo(
             TopAppBar(
                 title = {
                     Column {
-                        Text(text = "POS Mobile", style = MaterialTheme.typography.titleLarge)
+                        // --- ALTERADO: Removido LargeTitleText ---
+                        Text(
+                            text = BuildConfig.CLIENT_NAME,
+                            style = MaterialTheme.typography.titleLarge
+                        )
                         Text(
                             text = "Mesa $tableId",
                             style = MaterialTheme.typography.bodyMedium,
@@ -187,8 +227,8 @@ fun OrderScreenDemo(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBackToTables) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Voltar"
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Voltar" // --- ALTERADO ---
                         )
                     }
                 },
@@ -201,7 +241,7 @@ fun OrderScreenDemo(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ShoppingCart,
-                                contentDescription = "Carrinho"
+                                contentDescription = "Carrinho" // --- ALTERADO ---
                             )
                         }
                     }
@@ -313,7 +353,7 @@ private fun ProductCard(
                     onClick = onAddClick,
                     modifier = Modifier.size(32.dp).clip(CircleShape).background(AvailableGreen)
                 ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar", tint = OnAvailableGreen)
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar", tint = OnAvailableGreen) // --- ALTERADO ---
                 }
             }
         }
@@ -340,8 +380,8 @@ private fun OrderBottomBar(
             Spacer(modifier = Modifier.weight(1f))
             Text(text = formatCurrency(total), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             HorizontalSpace(16)
-            Text(text = "Ver pedido", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-            Icon(imageVector = Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(20.dp))
+            Text(text = "Ver pedido", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold) // --- ALTERADO ---
+            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(20.dp))
         }
     }
 }
@@ -358,10 +398,11 @@ private fun OrderSummarySheetContent(
     total: Double,
     onClose: () -> Unit,
     onConfirmOrder: () -> Unit,
-    onCloseAccount: () -> Unit, // --- NOVO PARÂMETRO ---
+    onCloseAccount: () -> Unit,
     onIncrement: (DemoCartItem) -> Unit,
     onDecrement: (DemoCartItem) -> Unit,
-    onRemove: (DemoCartItem) -> Unit
+    onRemove: (DemoCartItem) -> Unit,
+    onEditObservation: (DemoCartItem) -> Unit // --- NOVO ---
 ) {
     Column(
         modifier = Modifier
@@ -374,7 +415,7 @@ private fun OrderSummarySheetContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Pedido Atual",
+                text = "Pedido Atual", // --- ALTERADO ---
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -382,7 +423,7 @@ private fun OrderSummarySheetContent(
             IconButton(onClick = onClose) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Fechar",
+                    contentDescription = "Fechar", // --- ALTERADO ---
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -401,7 +442,8 @@ private fun OrderSummarySheetContent(
                     item = item,
                     onIncrement = { onIncrement(item) },
                     onDecrement = { onDecrement(item) },
-                    onRemove = { onRemove(item) }
+                    onRemove = { onRemove(item) },
+                    onEditObservation = { onEditObservation(item) } // --- NOVO ---
                 )
             }
         }
@@ -412,13 +454,13 @@ private fun OrderSummarySheetContent(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.End
         ) {
-            PriceLine(label = "Subtotal", amount = subtotal)
+            PriceLine(label = "Subtotal", amount = subtotal) // --- ALTERADO ---
             VerticalSpace(8)
             PriceLine(label = "IVA (23%)", amount = iva)
             VerticalSpace(8)
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
             VerticalSpace(8)
-            PriceLine(label = "Total", amount = total, isTotal = true)
+            PriceLine(label = "Total", amount = total, isTotal = true) // --- ALTERADO ---
         }
 
         // --- Botão de Confirmar Pedido ---
@@ -426,7 +468,7 @@ private fun OrderSummarySheetContent(
             onClick = onConfirmOrder,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp), // Espaço acima
+                .padding(top = 16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = AvailableGreen
             )
@@ -438,18 +480,18 @@ private fun OrderSummarySheetContent(
             )
         }
 
-        // --- NOVO: Botão de Fechar Conta ---
+        // --- Botão de Fechar Conta ---
         OutlinedButton(
             onClick = onCloseAccount,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 16.dp), // Espaço entre botões e abaixo
+                .padding(top = 8.dp, bottom = 16.dp),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant)
         ) {
             Text(
                 text = "Fechar Conta",
                 style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant, // Cor do texto
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         }
@@ -461,7 +503,8 @@ private fun CartItemRow(
     item: DemoCartItem,
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    onEditObservation: () -> Unit // --- NOVO ---
 ) {
     Surface(
         shape = RoundedCornerShape(12.dp),
@@ -497,6 +540,18 @@ private fun CartItemRow(
                     )
                 }
             }
+
+            // --- NOVO: Mostrar observação se existir ---
+            item.observation?.let {
+                Text(
+                    text = "Obs: $it",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary, // Cor de destaque
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+                )
+            }
+
             VerticalSpace(8)
             // Stepper e total do item
             Row(
@@ -516,6 +571,25 @@ private fun CartItemRow(
                     color = AvailableGreen
                 )
             }
+
+            // --- NOVO: Botão de Adicionar/Editar Observação ---
+            TextButton(
+                onClick = onEditObservation,
+                modifier = Modifier.padding(top = 4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Create,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                HorizontalSpace(4)
+                Text(
+                    text = if (item.observation == null) "Adicionar observação" else "Editar observação",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -532,7 +606,7 @@ private fun QuantityStepper(
     ) {
         SmallIconButton(
             onClick = onDecrement,
-            icon = Icons.Default.Clear,
+            icon = Icons.Default.Clear, // --- ALTERADO --- (era Clear)
             enabled = quantity > 0
         )
         Text(
@@ -609,47 +683,38 @@ private fun formatCurrency(price: Double): String {
     return format.format(price)
 }
 
-// --- PREVIEWS ---
-
-@Preview(showBackground = true, name = "Order Screen (Dark)")
-@Preview(showBackground = true, name = "Order Screen (Light)", uiMode = android.content.res.Configuration.UI_MODE_NIGHT_NO)
+// --- NOVO: Dialog Composable ---
 @Composable
-private fun OrderScreenDemoPreview() {
-    IxCafeTheme {
-        OrderScreenDemo(
-            tableId = "05",
-            onNavigateBackToTables = {},
-            onCloseAccount = {} // --- NOVO: Adicionado ao Preview ---
-        )
-    }
-}
+private fun AddObservationDialog(
+    item: DemoCartItem,
+    onDismiss: () -> Unit,
+    onConfirm: (DemoCartItem, String) -> Unit
+) {
+    var observationText by remember { mutableStateOf(item.observation ?: "") }
 
-@Preview(showBackground = true, name = "Order Summary Sheet (Dark)")
-@Composable
-private fun OrderSummarySheetPreview() {
-    val items = listOf(
-        DemoCartItem(DemoProduct("1", "Ice Tea", 2.30), 1),
-        DemoCartItem(DemoProduct("2", "Vinho Tinto (copo)", 3.50), 1),
-        DemoCartItem(DemoProduct("3", "Sumo Laranja", 3.00), 1)
-    )
-    val subtotal = items.sumOf { it.product.price * it.quantity }
-    val iva = subtotal * IVA_RATE
-    val total = subtotal + iva
-
-    IxCafeTheme(darkTheme = true) {
-        Surface {
-            OrderSummarySheetContent(
-                cartItems = items,
-                subtotal = subtotal,
-                iva = iva,
-                total = total,
-                onClose = { },
-                onConfirmOrder = { },
-                onCloseAccount = { }, // --- NOVO: Adicionado ao Preview ---
-                onIncrement = {},
-                onDecrement = {},
-                onRemove = {}
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Observação para ${item.product.name}") },
+        text = {
+            OutlinedTextField(
+                value = observationText,
+                onValueChange = { observationText = it },
+                label = { Text("Ex: com limão, sem gelo...") },
+                modifier = Modifier.fillMaxWidth()
             )
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(item, observationText) },
+                colors = ButtonDefaults.buttonColors(containerColor = AvailableGreen)
+            ) {
+                Text("Guardar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
         }
-    }
+    )
 }

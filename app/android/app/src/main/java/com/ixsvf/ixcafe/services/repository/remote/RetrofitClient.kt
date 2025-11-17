@@ -25,7 +25,7 @@ object RetrofitClient {
 
         // Constrói a instância do Retrofit
         retrofit = Retrofit.Builder()
-            .baseUrl(IxCafeConstants.ENDPOINTS_ROUTES.BASE_URL)
+            .baseUrl(IxCafeConstants.ENDPOINTSROUTES.BASE_URL)
             .client(httpClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()

@@ -4,7 +4,7 @@ import com.ixsvf.ixcafe.BuildConfig
 
 object IxCafeConstants {
 
-    object APP_SETTINGS {
+    object APPSETTINGS {
         const val SETTINGS_FILE_NAME = "settings"
         const val IS_FIRST_RUN = "is_first_run"
         const val AUTH_TOKEN_KEY = "auth_token"
@@ -14,7 +14,7 @@ object IxCafeConstants {
         const val DEMO_KEY = "Demonstração"
     }
 
-    object ENDPOINTS_ROUTES{
+    object ENDPOINTSROUTES{
         const val BASE_URL = BuildConfig.BASE_URL
 
         const val LOGIN = "api/empregados/login"
@@ -23,9 +23,17 @@ object IxCafeConstants {
     }
 
 
-    object NAV_ROUTES{
+    object NAVROUTES{
         const val LOGIN_SCREEN = "login_screen"
         const val TABLE_SCREEN = "mesas_screen"
 
+    }
+
+    object DEMOCREDENTIALS
+    {
+        const val DEMO_PROFILE_PIN = "1234"
+        const val MAX_PIN_LENGTH = 4
+        const val DEMO_SETTINGS_USER = "admin"
+        const val DEMO_SETTINGS_PASSWORD = "admin"
     }
 }

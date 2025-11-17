@@ -33,10 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ixsvf.ixcafe.constants.IxCafeConstants
 import com.ixsvf.ixcafe.screens.components.VerticalSpace
-import com.ixsvf.ixcafe.ui.theme.IxCafeTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,7 +141,7 @@ fun SettingsAuthScreen(
                 onClick = {
                     // TODO: Substituir por lógica de validação real
                     // Para já, validamos com "admin" / "admin"
-                    if (username == "admin" && password == "admin") {
+                    if (username == IxCafeConstants.DEMOCREDENTIALS.DEMO_SETTINGS_USER && password == IxCafeConstants.DEMOCREDENTIALS.DEMO_SETTINGS_PASSWORD) {
                         onLoginSuccess(username, password)
                     } else {
                         showError = true
@@ -158,15 +157,3 @@ fun SettingsAuthScreen(
     }
 }
 
-// --- PREVIEW ---
-@Preview(showBackground = true, name = "Settings Auth (Dark)", uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
-@Preview(showBackground = true, name = "Settings Auth (Light)")
-@Composable
-private fun SettingsAuthScreenPreview() {
-    IxCafeTheme {
-        SettingsAuthScreen(
-            onNavigateBack = {},
-            onLoginSuccess = { _, _ -> }
-        )
-    }
-}

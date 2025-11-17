@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -42,19 +41,19 @@ class MainActivity : ComponentActivity() {
 
                     NavHost(
                         navController = navController,
-                        startDestination = IxCafeConstants.NAV_ROUTES.LOGIN_SCREEN,
+                        startDestination = IxCafeConstants.NAVROUTES.LOGIN_SCREEN,
                         modifier = Modifier.padding(innerPadding)
                     ) {
 
                         // --- Rota 1: Login Screen ---
-                        composable(IxCafeConstants.NAV_ROUTES.LOGIN_SCREEN) {
+                        composable(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) {
                             val viewModel: LoginViewModel = viewModel()
                             val uiState by viewModel.uiState.collectAsState()
 
                             LoginScreen(
                                 uiState = uiState,
                                 onProfileSelected = { profile ->
-                                    if (profile.name == IxCafeConstants.APP_SETTINGS.DEMO_KEY) {
+                                    if (profile.name == IxCafeConstants.APPSETTINGS.DEMO_KEY) {
                                         navController.navigate("authDemo/${profile.name}")
                                     } else {
                                         navController.navigate("auth/${profile.name}")
@@ -81,8 +80,8 @@ class MainActivity : ComponentActivity() {
                             AuthScreenDemo(
                                 profile = UserProfile(name = name, role = "Empregado"),
                                 onCorrectPin = {
-                                    navController.navigate(IxCafeConstants.NAV_ROUTES.TABLE_SCREEN) {
-                                        popUpTo(IxCafeConstants.NAV_ROUTES.LOGIN_SCREEN) {
+                                    navController.navigate(IxCafeConstants.NAVROUTES.TABLE_SCREEN) {
+                                        popUpTo(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) {
                                             inclusive = true
                                         }
                                     }
@@ -105,7 +104,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // --- Rota 4: Mesas (Demo) ---
-                        composable(IxCafeConstants.NAV_ROUTES.TABLE_SCREEN) {
+                        composable(IxCafeConstants.NAVROUTES.TABLE_SCREEN) {
                             TablesScreenDemo(
                                 onTableClick = { table ->
                                     navController.navigate("order/${table.id}")
@@ -151,9 +150,9 @@ class MainActivity : ComponentActivity() {
                             SettingsScreen(
                                 onNavigateBack = {
                                     // Volta ao ecrã de login
-                                    navController.navigate(IxCafeConstants.NAV_ROUTES.LOGIN_SCREEN) {
+                                    navController.navigate(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) {
                                         // Limpa a pilha de navegação até ao login
-                                        popUpTo(IxCafeConstants.NAV_ROUTES.LOGIN_SCREEN) { inclusive = true }
+                                        popUpTo(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) { inclusive = true }
                                     }
                                 },
                                 onNavigateToProfileManagement = {
