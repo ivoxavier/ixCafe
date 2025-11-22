@@ -1,8 +1,8 @@
 package com.ixsvf.ixcafe.services.repository.remote.endpoints
 
 import com.ixsvf.ixcafe.constants.IxCafeConstants
-import com.ixsvf.ixcafe.services.repository.model.IxCafeLoginResponse
-import com.ixsvf.ixcafe.services.repository.model.ListaEmpregadosResponse
+import com.ixsvf.ixcafe.services.repository.remote.model.IxCafeLoginResponse
+import com.ixsvf.ixcafe.services.repository.remote.model.ListaEmpregadosResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

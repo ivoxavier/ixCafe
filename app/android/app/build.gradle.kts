@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -28,11 +30,13 @@ android {
 
             buildConfigField("String", "BASE_URL", "\"http://192.168.1.73:7281/\"")
             buildConfigField("String", "CLIENT_NAME", "\"Nome do Cliente\"")
+            buildConfigField("String", "CAFE_ID", "\"cafe_teste_01\"")
         }
         release{
 
             buildConfigField("String", "BASE_URL", "\"http://192.168.1.73:7281/\"")
             buildConfigField("String", "CLIENT_NAME", "\"Nome do Cliente\"")
+            buildConfigField("String", "CAFE_ID", "\"cafe_teste_01\"")
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -78,4 +82,10 @@ dependencies {
     implementation(libs.kotlinxSerialization)
     implementation(libs.retrofit)
     implementation(libs.navigation.compose)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
 }

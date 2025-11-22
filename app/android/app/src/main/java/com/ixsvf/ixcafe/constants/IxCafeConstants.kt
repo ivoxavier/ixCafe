@@ -12,6 +12,8 @@ object IxCafeConstants {
         const val LOGIN_KEY = "login"
 
         const val DEMO_KEY = "Demonstração"
+
+        const val MAX_PIN_LENGTH = 4
     }
 
     object ENDPOINTSROUTES{
@@ -35,5 +37,13 @@ object IxCafeConstants {
         const val MAX_PIN_LENGTH = 4
         const val DEMO_SETTINGS_USER = "admin"
         const val DEMO_SETTINGS_PASSWORD = "admin"
+    }
+
+    object LOCAL_DB{
+        const val NAME = "ixcafe_database"
+        object TABLES {
+            const val EMPREGADOS = "empregados"
+
+        }
     }
 }

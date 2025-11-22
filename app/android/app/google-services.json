@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "764681009202",
+    "project_id": "ixcafe",
+    "storage_bucket": "ixcafe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:764681009202:android:6034a6bc976cddef57e42b",
+        "android_client_info": {
+          "package_name": "com.ixsvf.ixcafe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeI8KGC4OlLUBLloaNera-sG0ZVrZaVA0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

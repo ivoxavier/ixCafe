@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -20,13 +22,15 @@ import androidx.navigation.navArgument
 import com.ixsvf.ixcafe.constants.IxCafeConstants
 import com.ixsvf.ixcafe.screens.LoginScreen
 import com.ixsvf.ixcafe.screens.SettingsAuthScreen
-import com.ixsvf.ixcafe.screens.SettingsScreen // <-- NOVO IMPORT
-import com.ixsvf.ixcafe.screens.demo.AuthScreenDemo
+import com.ixsvf.ixcafe.screens.SettingsScreen
+import com.ixsvf.ixcafe.screens.demo.AuthScreenDemo // O Demo
+// import com.ixsvf.ixcafe.screens.AuthScreen // <-- O REAL (Descomente quando criar o ficheiro do Passo 4)
 import com.ixsvf.ixcafe.screens.demo.OrderScreenDemo
 import com.ixsvf.ixcafe.screens.demo.TablesScreenDemo
-import com.ixsvf.ixcafe.services.repository.model.UserProfile
+import com.ixsvf.ixcafe.services.repository.EmpregadosProfile
 import com.ixsvf.ixcafe.ui.theme.IxCafeTheme
 import com.ixsvf.ixcafe.viewmodel.LoginViewModel
+// import com.ixsvf.ixcafe.viewmodel.AuthViewModel // <-- Import do novo VM
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +39,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             IxCafeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-
 
                     val navController = rememberNavController()
 
@@ -54,9 +57,11 @@ class MainActivity : ComponentActivity() {
                                 uiState = uiState,
                                 onProfileSelected = { profile ->
                                     if (profile.name == IxCafeConstants.APPSETTINGS.DEMO_KEY) {
+                                        // Rota Demo
                                         navController.navigate("authDemo/${profile.name}")
                                     } else {
-                                        navController.navigate("auth/${profile.name}")
+                                        // Rota Real (Passamos o ID)
+                                        navController.navigate("auth/${profile.id}")
                                     }
                                 },
                                 onSettingsClicked = {
@@ -68,22 +73,19 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- Rota 2: Auth Screen (Demo) ---
+                        // --- Rota 2: Auth Screen (Demo - PIN 1234) ---
                         composable(
                             route = "authDemo/{profileName}",
-                            arguments = listOf(navArgument("profileName") {
-                                type = NavType.StringType
-                            })
+                            arguments = listOf(navArgument("profileName") { type = NavType.StringType })
                         ) { backStackEntry ->
                             val name = backStackEntry.arguments?.getString("profileName") ?: "Demonstração"
 
+                            // Para demo, criamos um perfil fictício
                             AuthScreenDemo(
-                                profile = UserProfile(name = name, role = "Empregado"),
+                                profile = EmpregadosProfile(id = "demo", name = name, role = "Empregado"),
                                 onCorrectPin = {
                                     navController.navigate(IxCafeConstants.NAVROUTES.TABLE_SCREEN) {
-                                        popUpTo(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) {
-                                            inclusive = true
-                                        }
+                                        popUpTo(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) { inclusive = true }
                                     }
                                 },
                                 onNavigateBack = {
@@ -92,18 +94,34 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- Rota 3: Auth Screen (Real - Placeholder) ---
+                        // --- Rota 3: Auth Screen (REAL - Firebase/Room) ---
                         composable(
                             route = "auth/{profileId}",
-                            arguments = listOf(navArgument("profileId") {
-                                type = NavType.StringType
-                            })
-                        ) {
-                            val id = it.arguments?.getString("profileId")
-                            Text("Ecrã de Auth Real para o ID: $id")
+                            arguments = listOf(navArgument("profileId") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("profileId") ?: ""
+
+                            // AQUI ENTRA O AuthScreen REAL
+                            // Como ainda não tem o ficheiro criado (Passo 4), deixo comentado a lógica correta
+                            // e um placeholder para não dar erro de compilação agora.
+
+                            /*
+                            AuthScreen(
+                                profileId = id,
+                                onLoginSuccess = {
+                                    navController.navigate(IxCafeConstants.NAV_ROUTES.TABLE_SCREEN) {
+                                        popUpTo(IxCafeConstants.NAV_ROUTES.LOGIN_SCREEN) { inclusive = true }
+                                    }
+                                },
+                                onNavigateBack = { navController.popBackStack() }
+                            )
+                            */
+
+                            // Placeholder temporário até criar o AuthScreen.kt
+                            Text("Autenticação REAL para ID: $id. \n(Crie o AuthScreen.kt e AuthViewModel.kt para funcionar)")
                         }
 
-                        // --- Rota 4: Mesas (Demo) ---
+                        // --- Rota 4: Mesas ---
                         composable(IxCafeConstants.NAVROUTES.TABLE_SCREEN) {
                             TablesScreenDemo(
                                 onTableClick = { table ->
@@ -112,7 +130,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- Rota 5: Ecrã de Pedidos (Demo) ---
+                        // --- Rota 5: Pedidos ---
                         composable(
                             route = "order/{tableId}",
                             arguments = listOf(navArgument("tableId") { type = NavType.StringType })
@@ -131,12 +149,10 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- Rota 6: Autenticação das Definições ---
+                        // --- Rota 6: Auth Definições ---
                         composable("settingsAuth") {
                             SettingsAuthScreen(
-                                onNavigateBack = {
-                                    navController.popBackStack()
-                                },
+                                onNavigateBack = { navController.popBackStack() },
                                 onLoginSuccess = { user, pass ->
                                     navController.navigate("settingsMain") {
                                         popUpTo("settingsAuth") { inclusive = true }
@@ -145,35 +161,22 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- Rota 7: Ecrã Principal de Definições (ALTERADO) ---
+                        // --- Rota 7: Definições Principal ---
                         composable("settingsMain") {
                             SettingsScreen(
                                 onNavigateBack = {
-                                    // Volta ao ecrã de login
                                     navController.navigate(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) {
-                                        // Limpa a pilha de navegação até ao login
                                         popUpTo(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) { inclusive = true }
                                     }
                                 },
-                                onNavigateToProfileManagement = {
-                                    navController.navigate("profileManagement")
-                                },
-                                onNavigateToTableManagement = {
-                                    navController.navigate("tableManagement")
-                                }
+                                onNavigateToProfileManagement = { navController.navigate("profileManagement") },
+                                onNavigateToTableManagement = { navController.navigate("tableManagement") }
                             )
                         }
 
-                        // --- NOVAS ROTAS 8 e 9 (Placeholders) ---
-                        composable("profileManagement") {
-                            // TODO: Criar o ecrã de gestão de perfis
-                            Text("Ecrã de Gestão de Perfis")
-                        }
-
-                        composable("tableManagement") {
-                            // TODO: Criar o ecrã de gestão de mesas
-                            Text("Ecrã de Gestão de Mesas")
-                        }
+                        // --- Rotas Futuras ---
+                        composable("profileManagement") { Text("Gestão de Perfis") }
+                        composable("tableManagement") { Text("Gestão de Mesas") }
                     }
                 }
             }

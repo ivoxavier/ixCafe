@@ -1,14 +1,6 @@
-package com.ixsvf.ixcafe.services.repository.model
+package com.ixsvf.ixcafe.services.repository.remote.model
 
 import kotlinx.serialization.Serializable
-
-
-
-
-data class UserProfile(
-    val name: String,
-    val role: String
-)
 
 
 //Body RestAPi
@@ -28,6 +20,11 @@ data class IxCafeLoginResponse(
 
 @Serializable
 data class ListaEmpregadosResponse(
+    val id : Int,
     val nome: String,
     val cargo: String
 )
+
+
+
+

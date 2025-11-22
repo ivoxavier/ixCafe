@@ -1,4 +1,4 @@
-package com.ixsvf.ixcafe.screens.demo
+package com.ixsvf.ixcafe.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -15,6 +15,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,41 +23,93 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color // Adicionado
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ixsvf.ixcafe.R
 import com.ixsvf.ixcafe.constants.IxCafeConstants
 import com.ixsvf.ixcafe.screens.components.BackspaceButton
 import com.ixsvf.ixcafe.screens.components.Numpad
 import com.ixsvf.ixcafe.screens.components.PinDots
 import com.ixsvf.ixcafe.screens.components.VerticalSpace
-import com.ixsvf.ixcafe.services.repository.EmpregadosProfile
-
+import com.ixsvf.ixcafe.services.repository.EmpregadosProfile // Confirme se é este o nome da sua classe ou UserProfile
+import com.ixsvf.ixcafe.viewmodel.AuthState
+import com.ixsvf.ixcafe.viewmodel.AuthViewModel
 
 @Composable
-fun AuthScreenDemo(
-    profile: EmpregadosProfile,
-    onCorrectPin: () -> Unit,
+fun AuthScreen(
+    profileId: String,
+    onLoginSuccess: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    var pin by remember { mutableStateOf("") }
-    var showError by remember { mutableStateOf(false) }
+    val viewModel: AuthViewModel = viewModel()
+    // O estado do utilizador atual vindo do ViewModel
+    val empregadoProfile by viewModel.currentUser.collectAsState()
+    // O estado do login (Sucesso/Erro)
+    val loginState by viewModel.loginState.collectAsState()
 
+    // Estado local do PIN inserido
+    var pin by remember { mutableStateOf("") }
+    // Erro local (baseado no estado do ViewModel)
+    val isError = loginState is AuthState.Error
+
+    // 1. Carregar o utilizador assim que o ecrã abre
+    LaunchedEffect(profileId) {
+        viewModel.loadUser(profileId)
+    }
+
+    // 2. Validar PIN quando atinge o tamanho máximo
     LaunchedEffect(pin) {
         if (pin.length == IxCafeConstants.DEMOCREDENTIALS.MAX_PIN_LENGTH) {
-            if (pin == IxCafeConstants.DEMOCREDENTIALS.DEMO_PROFILE_PIN) {
-                kotlinx.coroutines.delay(200)
-                onCorrectPin()
-            } else {
-                showError = true
-                kotlinx.coroutines.delay(1000)
+            viewModel.validatePin(pin)
+            // Se falhar, limpamos o PIN após um breve momento (opcional, visualmente melhor)
+            if (viewModel.loginState.value is AuthState.Error) {
+                kotlinx.coroutines.delay(500)
                 pin = ""
-                showError = false
             }
         }
     }
 
-    // --- UI ---
+    // 3. Reagir ao sucesso do login
+    LaunchedEffect(loginState) {
+        if (loginState is AuthState.Success) {
+            onLoginSuccess()
+            viewModel.resetState()
+        }
+    }
+
+    // 4. Mostrar o ecrã se o perfil já foi carregado
+    empregadoProfile?.let { profile ->
+        AuthScreenContent(
+            profile = profile,
+            pinLength = pin.length,
+            isError = isError,
+            onNavigateBack = onNavigateBack,
+            onNumberClick = { number ->
+                if (pin.length < IxCafeConstants.DEMOCREDENTIALS.MAX_PIN_LENGTH) {
+                    pin += number
+                }
+            },
+            onBackspaceClick = {
+                if (pin.isNotEmpty()) {
+                    pin = pin.dropLast(1)
+                }
+            }
+        )
+    }
+} // <--- A função AuthScreen fecha AQUI
+
+// Componente UI separado e "Stateless" (Recebe tudo o que precisa para desenhar)
+@Composable
+fun AuthScreenContent(
+    profile: EmpregadosProfile, // Ou UserProfile, conforme o seu projeto
+    pinLength: Int,
+    isError: Boolean,
+    onNavigateBack: () -> Unit,
+    onNumberClick: (String) -> Unit,
+    onBackspaceClick: () -> Unit
+) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -68,7 +121,7 @@ fun AuthScreenDemo(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // --- 1. CABEÇALHO (ÍCONE E NOME) ---
+            // --- 1. CABEÇALHO ---
             VerticalSpace(height = 32)
             Icon(
                 imageVector = Icons.Default.Person,
@@ -76,53 +129,48 @@ fun AuthScreenDemo(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(CircleShape)
-                    // CORRIGIDO: Usa cores do tema
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .padding(16.dp),
-                // CORRIGIDO: Usa cores do tema
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
             VerticalSpace(16)
+
             Text(
                 text = profile.name,
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onBackground
             )
+
             VerticalSpace(8)
+
             Text(
-                text = if (showError) stringResource(R.string.lbl_wrong_pin) else stringResource(R.string.lbl_enter_pin),
+                text = if (isError) stringResource(R.string.lbl_wrong_pin) else stringResource(R.string.lbl_enter_pin),
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (showError) MaterialTheme.colorScheme.error
-                // CORRIGIDO: Usa cor do tema
+                color = if (isError) MaterialTheme.colorScheme.error
                 else MaterialTheme.colorScheme.onSurfaceVariant
             )
+
             VerticalSpace(32)
 
             // --- 2. INDICADOR DE PIN ---
             PinDots(
-                pinLength = pin.length,
+                pinLength = pinLength,
                 maxLength = IxCafeConstants.DEMOCREDENTIALS.MAX_PIN_LENGTH,
-                isError = showError
+                isError = isError
             )
+
             VerticalSpace(32)
 
             // --- 3. TECLADO NUMÉRICO ---
             Numpad(
-                onNumberClick = { number ->
-                    if (pin.length < IxCafeConstants.DEMOCREDENTIALS.MAX_PIN_LENGTH) {
-                        pin += number
-                    }
-                },
+                onNumberClick = onNumberClick,
                 onBackClick = onNavigateBack
             )
-            // --- 4. BOTÃO DE APAGAR (NO FUNDO) ---
+
+            // --- 4. BOTÃO DE APAGAR ---
             Spacer(modifier = Modifier.weight(0.5f))
             BackspaceButton(
-                onClick = {
-                    if (pin.isNotEmpty()) {
-                        pin = pin.dropLast(1)
-                    }
-                }
+                onClick = onBackspaceClick
             )
             VerticalSpace(height = 16)
         }

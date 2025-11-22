@@ -42,7 +42,7 @@ import com.ixsvf.ixcafe.screens.components.HorizontalSpace
 import com.ixsvf.ixcafe.screens.components.LargeTitleText
 import com.ixsvf.ixcafe.screens.components.MediumBodyText
 import com.ixsvf.ixcafe.screens.components.VerticalSpace
-import com.ixsvf.ixcafe.services.repository.model.UserProfile
+import com.ixsvf.ixcafe.services.repository.EmpregadosProfile
 import com.ixsvf.ixcafe.viewmodel.LoginUiState
 
 
@@ -51,12 +51,13 @@ import com.ixsvf.ixcafe.viewmodel.LoginUiState
 fun LoginScreen(
     modifier: Modifier = Modifier,
     uiState: LoginUiState,
-    onProfileSelected: (UserProfile) -> Unit,
+    onProfileSelected: (EmpregadosProfile) -> Unit,
     onSettingsClicked: () -> Unit,
     onRetry: () -> Unit
 ) {
 
-    val demoProfile = UserProfile(
+    val demoProfile = EmpregadosProfile(
+        id = "1",
         name = IxCafeConstants.APPSETTINGS.DEMO_KEY,
         role = "Empregado"
     )
@@ -97,9 +98,8 @@ fun LoginScreen(
 
                 VerticalSpace(48)
 
-                when{
-
-                    // Estado 1: A carregar
+                when {
+                    // 1. A carregar (Prioridade máxima visual)
                     uiState.isLoading -> {
                         CircularProgressIndicator(
                             modifier = Modifier.padding(top = 32.dp),
@@ -107,24 +107,23 @@ fun LoginScreen(
                         )
                     }
 
-
-                    // Estado 2: Sucesso com perfis reais
+                    // 2. Temos dados reais (Room ou API)
                     uiState.profiles.isNotEmpty() -> {
                         ProfileList(
                             profiles = uiState.profiles,
                             onProfileSelected = onProfileSelected
                         )
                     }
-                    // Estado 3: Modo DEBUG (Apanha 'error' ou 'isEmpty')
-                    // Se não estamos a carregar e não temos perfis,
-                    // mostramos o perfil DEMO em vez do erro.
+
+                   /* // 3. Modo DEBUG e sem dados reais (Fallback para Demo)
                     BuildConfig.DEBUG -> {
                         ProfileList(
                             profiles = listOf(demoProfile),
                             onProfileSelected = onProfileSelected
                         )
-                    }
-                    // Estado 4: Modo RELEASE com Erro
+                    }*/
+
+                    // 4. Erro (Só mostramos erro se não houver dados na Room)
                     uiState.error != null -> {
                         ErrorState(
                             message = uiState.error,
@@ -132,13 +131,9 @@ fun LoginScreen(
                         )
                     }
 
-                    // Estado 5: Modo RELEASE com lista vazia
-                    // (profiles.isEmpty() e error == null)
+                    // 5. Lista Vazia (Estado Final)
                     else -> {
-                        ProfileList(
-                            profiles = uiState.profiles,
-                            onProfileSelected = onProfileSelected
-                        )
+                        EmptyState(message = stringResource(R.string.login_screen_no_users))
                     }
                 }
                 AppVersion(Modifier.weight(1f))
@@ -167,8 +162,8 @@ fun LoginScreen(
 
 @Composable
 private fun ProfileList(
-    profiles: List<UserProfile>,
-    onProfileSelected: (UserProfile) -> Unit
+    profiles: List<EmpregadosProfile>,
+    onProfileSelected: (EmpregadosProfile) -> Unit
 ) {
     Surface(
         modifier = Modifier
@@ -198,7 +193,7 @@ private fun ProfileList(
 
 @Composable
 fun ProfileListItem(
-    profile: UserProfile,
+    profile: EmpregadosProfile,
     onClick: () -> Unit
 ) {
     Row(
