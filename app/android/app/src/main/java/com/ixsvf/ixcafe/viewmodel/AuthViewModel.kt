@@ -38,17 +38,27 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun validatePin(inputPin: String) {
         val user = _currentUser.value ?: return
 
-        // Se não houver pinHash (ex: utilizador criado sem pin), falha ou aceita '0000' (decisão sua)
+        val hashedInput = CryptoUtils.hashPin(inputPin)
+
+        // --- LOGS PARA DEBUG (Veja isto no Logcat) ---
+        println("!!! DEBUG AUTH !!!")
+        println("User ID: ${user.id}")
+        println("User Name: ${user.name}")
+        println("PIN da DB (Hash): '${user.pinHash}'") // As plicas '' ajudam a ver espaços escondidos
+        println("PIN Inserido (Hash): '$hashedInput'")
+        // --------------------------------------------
+
         if (user.pinHash == null) {
+            println("!!! ERRO: O pinHash do utilizador é NULL !!!")
             _loginState.value = AuthState.Error
             return
         }
 
-        val hashedInput = CryptoUtils.hashPin(inputPin)
-
         if (hashedInput == user.pinHash) {
+            println("!!! SUCESSO: PIN Correto !!!")
             _loginState.value = AuthState.Success
         } else {
+            println("!!! FALHA: Hashes não coincidem !!!")
             _loginState.value = AuthState.Error
         }
     }

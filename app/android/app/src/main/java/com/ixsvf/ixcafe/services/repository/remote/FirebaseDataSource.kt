@@ -38,7 +38,8 @@ class FirebaseDataSource {
                     id = document.id,
                     name = document.getString("nome") ?: "Sem Nome",
                     role = document.getString("cargo") ?: "Indefinido",
-                    pinHash = document.getString("pin_hash") ?: "Sem PIN"
+                    pinHash = document.getString("pin_hash") ?: "Sem PIN",
+                    isActive = document.getBoolean("is_active") ?: false
                 )
             }
         } catch (e: Exception) {
@@ -46,5 +47,29 @@ class FirebaseDataSource {
             println("Erro ao buscar empregados para o café: $cafeId. Erro: ${e.message}")
             throw e
         }
+    }
+
+
+    fun listenToEmpregadosChanges(onUpdate: (List<EmpregadosProfile>) -> Unit) {
+        val cafeId = BuildConfig.CAFE_ID
+
+        db.collection("cafes").document(cafeId).collection("empregados")
+            .addSnapshotListener { snapshots, e ->
+                if (e != null) return@addSnapshotListener
+
+                if (snapshots != null) {
+                    val profiles = snapshots.documents.map { document ->
+                        // ... seu código de mapeamento ...
+                        EmpregadosProfile(
+                            id = document.id,
+                            name = document.getString("nome") ?: "",
+                            role = document.getString("cargo") ?: "",
+                            pinHash = document.getString("pin_hash"),
+                            isActive = document.getBoolean("is_active") ?: true
+                        )
+                    }
+                    onUpdate(profiles)
+                }
+            }
     }
 }

@@ -9,7 +9,7 @@ import com.ixsvf.ixcafe.services.repository.local.dao.EmpregadosDao
 import com.ixsvf.ixcafe.services.repository.local.model.EmpregadosEntity
 
 
-@Database(entities = [EmpregadosEntity::class], version = 2, exportSchema = false)
+@Database(entities = [EmpregadosEntity::class], version = 4, exportSchema = false)
 abstract class IxCafeDatabase: RoomDatabase() {
 
     abstract fun empregadosDao() : EmpregadosDao

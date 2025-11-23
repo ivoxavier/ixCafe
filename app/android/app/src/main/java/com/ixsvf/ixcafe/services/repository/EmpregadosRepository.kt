@@ -36,11 +36,16 @@ class EmpregadosRepository(
                 id = user.id,
                 name = user.name,
                 role = user.role,
-                pinHash = user.pinHash // Agora incluímos o pinHash
+                pinHash = user.pinHash,
+                isActive = user.isActive// Agora incluímos o pinHash
             )
         }
 
         // 3. Salva no Room (Offline cache)
         empregadosDao.updateEmpregados(userEntities)
+    }
+
+    fun getEmpregadoFlow(id: String): Flow<EmpregadosProfile?> {
+        return empregadosDao.getEmpregadoFlow(id).map { it?.toEmpregadosProfile() }
     }
 }

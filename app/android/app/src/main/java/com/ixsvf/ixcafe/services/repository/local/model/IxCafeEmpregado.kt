@@ -11,7 +11,8 @@ data class EmpregadosEntity(
     @PrimaryKey val id: String, // O nome ou ID único do empregado
     val name: String,
     val role: String,
-    val pinHash: String? = null // Preparado para o futuro (Login Offline)
+    val pinHash: String? = null,
+    val isActive: Boolean = true// Preparado para o futuro (Login Offline)
 )
 
 // Função de extensão para converter Entidade -> Modelo de UI
@@ -19,7 +20,9 @@ fun EmpregadosEntity.toEmpregadosProfile(): EmpregadosProfile {
     return EmpregadosProfile(
         id = this.id.toString(),
         name = this.name,
-        role = this.role
+        role = this.role,
+        pinHash = this.pinHash,
+        isActive = this.isActive
     )
 }
 
@@ -28,6 +31,8 @@ fun EmpregadosProfile.toEmpregadosEntity(): EmpregadosEntity {
     return EmpregadosEntity(
         id = this.id,
         name = this.name,
-        role = this.role
+        role = this.role,
+        pinHash = this.pinHash,
+        isActive = this.isActive
     )
 }

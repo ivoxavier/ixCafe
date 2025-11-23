@@ -20,17 +20,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ixsvf.ixcafe.constants.IxCafeConstants
+import com.ixsvf.ixcafe.screens.AuthScreen
 import com.ixsvf.ixcafe.screens.LoginScreen
 import com.ixsvf.ixcafe.screens.SettingsAuthScreen
 import com.ixsvf.ixcafe.screens.SettingsScreen
-import com.ixsvf.ixcafe.screens.demo.AuthScreenDemo // O Demo
-// import com.ixsvf.ixcafe.screens.AuthScreen // <-- O REAL (Descomente quando criar o ficheiro do Passo 4)
+import com.ixsvf.ixcafe.screens.demo.AuthScreenDemo
 import com.ixsvf.ixcafe.screens.demo.OrderScreenDemo
 import com.ixsvf.ixcafe.screens.demo.TablesScreenDemo
 import com.ixsvf.ixcafe.services.repository.EmpregadosProfile
 import com.ixsvf.ixcafe.ui.theme.IxCafeTheme
 import com.ixsvf.ixcafe.viewmodel.LoginViewModel
-// import com.ixsvf.ixcafe.viewmodel.AuthViewModel // <-- Import do novo VM
+import com.ixsvf.ixcafe.viewmodel.AuthViewModel
+import com.ixsvf.ixcafe.viewmodel.SessionViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +42,23 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
                     val navController = rememberNavController()
+
+                    // 1. Criar o SessionViewModel ao nível da Activity
+                    val sessionViewModel: SessionViewModel = viewModel()
+
+                    // 2. Observar se devemos fazer logout forçado
+                    val shouldLogout by sessionViewModel.shouldLogout.collectAsState()
+
+                    // 3. Reação ao Logout Forçado (A magia acontece aqui!)
+                    LaunchedEffect(shouldLogout) {
+                        if (shouldLogout) {
+                            // Limpa a pilha e vai para o login
+                            navController.navigate(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) {
+                                popUpTo(0) { inclusive = true } // Limpa TUDO
+                            }
+                            sessionViewModel.onLogoutCompleted()
+                        }
+                    }
 
                     NavHost(
                         navController = navController,
@@ -94,31 +112,21 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- Rota 3: Auth Screen (REAL - Firebase/Room) ---
-                        composable(
-                            route = "auth/{profileId}",
-                            arguments = listOf(navArgument("profileId") { type = NavType.StringType })
-                        ) { backStackEntry ->
+                        composable("auth/{profileId}") { backStackEntry ->
                             val id = backStackEntry.arguments?.getString("profileId") ?: ""
 
-                            // AQUI ENTRA O AuthScreen REAL
-                            // Como ainda não tem o ficheiro criado (Passo 4), deixo comentado a lógica correta
-                            // e um placeholder para não dar erro de compilação agora.
-
-                            /*
                             AuthScreen(
                                 profileId = id,
                                 onLoginSuccess = {
-                                    navController.navigate(IxCafeConstants.NAV_ROUTES.TABLE_SCREEN) {
-                                        popUpTo(IxCafeConstants.NAV_ROUTES.LOGIN_SCREEN) { inclusive = true }
+                                    // --- AQUI: AVISAR A SESSÃO QUE O LOGIN OCORREU ---
+                                    sessionViewModel.startSession(id)
+
+                                    navController.navigate(IxCafeConstants.NAVROUTES.TABLE_SCREEN) {
+                                        popUpTo(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) { inclusive = true }
                                     }
                                 },
                                 onNavigateBack = { navController.popBackStack() }
                             )
-                            */
-
-                            // Placeholder temporário até criar o AuthScreen.kt
-                            Text("Autenticação REAL para ID: $id. \n(Crie o AuthScreen.kt e AuthViewModel.kt para funcionar)")
                         }
 
                         // --- Rota 4: Mesas ---

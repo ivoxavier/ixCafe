@@ -71,6 +71,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun fetchProfiles() {
+
+        _uiState.update { it.copy(isLoading = true) }
+
+
         viewModelScope.launch {
             // Nota: Não limpamos a lista atual, nem metemos isLoading = true agressivamente
             // para não piscar o ecrã se já tivermos dados em cache.
