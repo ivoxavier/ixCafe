@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,7 +21,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -46,7 +44,7 @@ import com.ixsvf.ixcafe.screens.components.HorizontalSpace
 import com.ixsvf.ixcafe.screens.components.LargeTitleText
 import com.ixsvf.ixcafe.screens.components.MediumBodyText
 import com.ixsvf.ixcafe.screens.components.VerticalSpace
-import com.ixsvf.ixcafe.services.repository.EmpregadosProfile
+import com.ixsvf.ixcafe.services.repository.model.EmpregadosProfile
 import com.ixsvf.ixcafe.viewmodel.LoginUiState
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -5,6 +5,7 @@ import com.ixsvf.ixcafe.services.repository.local.dao.EmpregadosDao
 
 import com.ixsvf.ixcafe.services.repository.local.model.EmpregadosEntity
 import com.ixsvf.ixcafe.services.repository.local.model.toEmpregadosProfile
+import com.ixsvf.ixcafe.services.repository.model.EmpregadosProfile
 import com.ixsvf.ixcafe.services.repository.remote.FirebaseDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

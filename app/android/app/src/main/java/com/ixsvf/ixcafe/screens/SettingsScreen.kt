@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.ShoppingCart // <-- Import Novo
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -37,7 +38,8 @@ import com.ixsvf.ixcafe.ui.theme.IxCafeTheme
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToProfileManagement: () -> Unit,
-    onNavigateToTableManagement: () -> Unit
+    onNavigateToTableManagement: () -> Unit,
+    onNavigateToProductManagement: () -> Unit // <-- NOVO PARÂMETRO
 ) {
     Scaffold(
         topBar = {
@@ -83,7 +85,14 @@ fun SettingsScreen(
             )
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
-            // ... Pode adicionar mais opções de settings aqui ...
+            // --- Opção 3: Gestão de Produtos (NOVO) ---
+            SettingsItem(
+                icon = Icons.Default.ShoppingCart,
+                title = "Gestão de Produtos",
+                subtitle = "Criar produtos, categorias e gerir preços",
+                onClick = onNavigateToProductManagement
+            )
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
         }
     }
 }
@@ -147,7 +156,8 @@ private fun SettingsScreenPreview() {
         SettingsScreen(
             onNavigateBack = {},
             onNavigateToProfileManagement = {},
-            onNavigateToTableManagement = {}
+            onNavigateToTableManagement = {},
+            onNavigateToProductManagement = {} // <-- Atualizado no preview
         )
     }
 }

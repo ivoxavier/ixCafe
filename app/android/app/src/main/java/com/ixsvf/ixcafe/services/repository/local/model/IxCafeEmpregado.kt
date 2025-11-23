@@ -3,7 +3,7 @@ package com.ixsvf.ixcafe.services.repository.local.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.ixsvf.ixcafe.constants.IxCafeConstants
-import com.ixsvf.ixcafe.services.repository.EmpregadosProfile
+import com.ixsvf.ixcafe.services.repository.model.EmpregadosProfile
 
 
 @Entity(tableName = IxCafeConstants.LOCAL_DB.TABLES.EMPREGADOS)

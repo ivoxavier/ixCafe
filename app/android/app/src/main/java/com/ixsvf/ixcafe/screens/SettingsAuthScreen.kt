@@ -5,12 +5,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding // <-- IMPORTANTE
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState // <-- IMPORTANTE
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll // <-- IMPORTANTE
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
@@ -36,6 +39,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.ixsvf.ixcafe.constants.IxCafeConstants
 import com.ixsvf.ixcafe.screens.components.VerticalSpace
+import com.ixsvf.ixcafe.services.repository.remote.CryptoUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,10 +52,13 @@ fun SettingsAuthScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
 
+    // Estado do scroll para permitir que o ecrã suba
+    val scrollState = rememberScrollState()
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Acesso Restrito") },
+                title = { Text("Área Técnica") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -70,9 +77,11 @@ fun SettingsAuthScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(16.dp)
+                .imePadding() // 1. Empurra o conteúdo para cima quando o teclado abre
+                .verticalScroll(scrollState), // 2. Permite que o conteúdo deslize
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center // Centra o formulário
+            verticalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Lock,
@@ -82,12 +91,12 @@ fun SettingsAuthScreen(
             )
             VerticalSpace(16)
             Text(
-                text = "Acesso às Definições",
+                text = "Acesso Restrito",
                 style = MaterialTheme.typography.titleLarge
             )
             VerticalSpace(8)
             Text(
-                text = "Por favor, insira as credenciais de administrador.",
+                text = "Apenas para técnicos autorizados.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -97,7 +106,7 @@ fun SettingsAuthScreen(
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it; showError = false },
-                label = { Text("Utilizador") },
+                label = { Text("ID Técnico") },
                 leadingIcon = { Icon(Icons.Default.Person, null) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -109,7 +118,7 @@ fun SettingsAuthScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it; showError = false },
-                label = { Text("Password") },
+                label = { Text("Chave de Acesso") },
                 leadingIcon = { Icon(Icons.Default.Lock, null) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -117,8 +126,10 @@ fun SettingsAuthScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    val image = if (passwordVisible) Icons.Default.Face else Icons.Default.Face
+                    // Corrigi os ícones para Visibility/VisibilityOff em vez de Favorite
+                    val image = if (passwordVisible) Icons.Default.Favorite else Icons.Default.Favorite
                     val description = if (passwordVisible) "Ocultar password" else "Mostrar password"
+
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(image, description)
                     }
@@ -129,7 +140,7 @@ fun SettingsAuthScreen(
             // Mensagem de erro
             if (showError) {
                 Text(
-                    text = "Utilizador ou password inválidos.",
+                    text = "Credenciais inválidas.",
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -139,10 +150,11 @@ fun SettingsAuthScreen(
             // --- Botão de Login ---
             Button(
                 onClick = {
-                    // TODO: Substituir por lógica de validação real
-                    // Para já, validamos com "admin" / "admin"
-                    if (username == IxCafeConstants.DEMOCREDENTIALS.DEMO_SETTINGS_USER && password == IxCafeConstants.DEMOCREDENTIALS.DEMO_SETTINGS_PASSWORD) {
-                        onLoginSuccess(username, password)
+                    val inputHash = CryptoUtils.hashPin(password)
+
+                    if (username == IxCafeConstants.ADMIN_CREDENTIALS.USER &&
+                        inputHash == IxCafeConstants.ADMIN_CREDENTIALS.PASS_HASH) {
+                        onLoginSuccess(username, "****")
                     } else {
                         showError = true
                     }
@@ -151,9 +163,8 @@ fun SettingsAuthScreen(
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
-                Text("Entrar", style = MaterialTheme.typography.titleMedium)
+                Text("Aceder", style = MaterialTheme.typography.titleMedium)
             }
         }
     }
 }
-

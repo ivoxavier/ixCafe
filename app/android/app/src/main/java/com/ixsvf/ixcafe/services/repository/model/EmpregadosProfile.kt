@@ -1,12 +1,4 @@
-package com.ixsvf.ixcafe.services.repository
-
-
-
-
-
-/*o profile é usado ambos os metodos, local e remote*/
-
-
+package com.ixsvf.ixcafe.services.repository.model
 
 data class EmpregadosProfile(
     val id: String,
@@ -15,5 +7,3 @@ data class EmpregadosProfile(
     val pinHash: String? = null,
     val isActive: Boolean = true
 )
-
-

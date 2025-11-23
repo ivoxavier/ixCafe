@@ -39,6 +39,15 @@ object IxCafeConstants {
         const val DEMO_SETTINGS_PASSWORD = "admin"
     }
 
+
+    object ADMIN_CREDENTIALS {
+        const val USER = "ix_tech"
+
+        // Este é o Hash SHA-256 da password: "Ix!Admin@2025"
+        const val PASS_HASH = "7fb4240dbe2dca65f8eb312e0c2cd3ea42b9bb859a5b30bc4802c9125c2f3e3c"
+    }
+
+
     object LOCAL_DB{
         const val NAME = "ixcafe_database"
         object TABLES {
@@ -46,4 +55,6 @@ object IxCafeConstants {
 
         }
     }
+
+
 }

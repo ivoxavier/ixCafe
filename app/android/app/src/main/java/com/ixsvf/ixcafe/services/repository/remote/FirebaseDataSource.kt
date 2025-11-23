@@ -4,7 +4,7 @@ package com.ixsvf.ixcafe.services.repository.remote
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ixsvf.ixcafe.BuildConfig
-import com.ixsvf.ixcafe.services.repository.EmpregadosProfile
+import com.ixsvf.ixcafe.services.repository.model.EmpregadosProfile
 import kotlinx.coroutines.tasks.await
 
 class FirebaseDataSource {

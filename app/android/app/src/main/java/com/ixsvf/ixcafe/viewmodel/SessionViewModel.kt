@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.ixsvf.ixcafe.IxCafeApplication
-import com.ixsvf.ixcafe.services.repository.EmpregadosProfile
+import com.ixsvf.ixcafe.services.repository.model.EmpregadosProfile
 import com.ixsvf.ixcafe.services.repository.EmpregadosRepository
 import com.ixsvf.ixcafe.services.repository.remote.FirebaseDataSource
 import kotlinx.coroutines.Job

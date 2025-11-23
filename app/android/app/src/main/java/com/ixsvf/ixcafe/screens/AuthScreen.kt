@@ -23,7 +23,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color // Adicionado
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,7 +32,7 @@ import com.ixsvf.ixcafe.screens.components.BackspaceButton
 import com.ixsvf.ixcafe.screens.components.Numpad
 import com.ixsvf.ixcafe.screens.components.PinDots
 import com.ixsvf.ixcafe.screens.components.VerticalSpace
-import com.ixsvf.ixcafe.services.repository.EmpregadosProfile // Confirme se é este o nome da sua classe ou UserProfile
+import com.ixsvf.ixcafe.services.repository.model.EmpregadosProfile // Confirme se é este o nome da sua classe ou UserProfile
 import com.ixsvf.ixcafe.viewmodel.AuthState
 import com.ixsvf.ixcafe.viewmodel.AuthViewModel
 

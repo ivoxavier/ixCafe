@@ -6,13 +6,32 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.ixsvf.ixcafe.constants.IxCafeConstants
 import com.ixsvf.ixcafe.services.repository.local.dao.EmpregadosDao
+import com.ixsvf.ixcafe.services.repository.local.dao.MesaDao
+import com.ixsvf.ixcafe.services.repository.local.dao.ProdutoDao
+import com.ixsvf.ixcafe.services.repository.local.dao.QueueOrderDao
 import com.ixsvf.ixcafe.services.repository.local.model.EmpregadosEntity
+import com.ixsvf.ixcafe.services.repository.local.model.MesaEntity
+import com.ixsvf.ixcafe.services.repository.local.model.ProdutoEntity
+import com.ixsvf.ixcafe.services.repository.local.model.QueueOrderEntity
 
 
-@Database(entities = [EmpregadosEntity::class], version = 4, exportSchema = false)
+@Database(
+    entities = [
+        EmpregadosEntity::class,
+        ProdutoEntity::class,
+        MesaEntity::class,
+        QueueOrderEntity::class
+    ],
+    version = 5,
+    exportSchema = false
+)
 abstract class IxCafeDatabase: RoomDatabase() {
 
     abstract fun empregadosDao() : EmpregadosDao
+    abstract fun produtoDao(): ProdutoDao
+    abstract  fun mesaDao(): MesaDao
+    abstract fun queueOrderDao(): QueueOrderDao
+
 
     companion object {
         @Volatile
@@ -26,8 +45,10 @@ abstract class IxCafeDatabase: RoomDatabase() {
                     IxCafeDatabase::class.java,
                     IxCafeConstants.LOCAL_DB.NAME
                 ).build()
+                    //.fallbackToDestructiveMigration()
                 INSTANCE = instance
                 instance
+
             }
         }
 

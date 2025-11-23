@@ -30,7 +30,7 @@ import com.ixsvf.ixcafe.screens.components.BackspaceButton
 import com.ixsvf.ixcafe.screens.components.Numpad
 import com.ixsvf.ixcafe.screens.components.PinDots
 import com.ixsvf.ixcafe.screens.components.VerticalSpace
-import com.ixsvf.ixcafe.services.repository.EmpregadosProfile
+import com.ixsvf.ixcafe.services.repository.model.EmpregadosProfile
 
 
 @Composable
