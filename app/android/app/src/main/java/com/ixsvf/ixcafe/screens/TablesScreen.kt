@@ -6,11 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
@@ -29,7 +26,7 @@ import com.ixsvf.ixcafe.screens.components.VerticalSpace
 import com.ixsvf.ixcafe.services.repository.model.Mesa
 import com.ixsvf.ixcafe.viewmodel.TablesUiState
 
-// Cores (mantivemos as mesmas do demo, mas agora locais)
+// Cores
 private val AvailableGreen = Color(0xFF006D4F)
 private val OccupiedOrange = Color(0xFFB54C00)
 private val OnAvailableGreen = Color(0xFFFFFFFF)
@@ -38,100 +35,96 @@ private val OnOccupiedOrange = Color(0xFFFFFFFF)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TablesScreen(
-    uiState: TablesUiState, // Recebe o estado real do ViewModel
+    uiState: TablesUiState,
     onTableClick: (Mesa) -> Unit,
     onRefresh: () -> Unit
 ) {
-
-    // Wrapper do PullToRefresh para permitir recarregar mesas manualmente
     PullToRefreshBox(
         isRefreshing = uiState.isLoading,
         onRefresh = onRefresh,
         modifier = Modifier.fillMaxSize()
     ) {
-        // Box com scroll para garantir que o swipe funciona sempre
-        Box(
+        // ESTRUTURA SEGURA:
+        // Uma Column que ocupa o ecrã todo.
+        // NENHUM 'verticalScroll' aqui, pois a Grid já tem o seu próprio scroll.
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            // --- 1. CABEÇALHO (Tamanho fixo, fica no topo) ---
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = "Restaurante",
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+                HorizontalSpace(8)
+                Text(
+                    text = BuildConfig.CLIENT_NAME,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+            VerticalSpace(24)
 
-                // --- CABEÇALHO ---
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ShoppingCart,
-                        contentDescription = "Restaurante",
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                    HorizontalSpace(8)
-                    Text(
-                        text = BuildConfig.CLIENT_NAME, // Nome do cliente real
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+            // --- 2. LEGENDA (Tamanho fixo) ---
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = "Mapa de Mesas",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                VerticalSpace(8)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    LegendItem(AvailableGreen, "Livre")
+                    HorizontalSpace(16)
+                    LegendItem(OccupiedOrange, "Ocupada")
                 }
-                VerticalSpace(24)
+            }
+            VerticalSpace(16)
 
-                // --- LEGENDA ---
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = "Mapa de Mesas",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    VerticalSpace(8)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        LegendItem(AvailableGreen, "Livre")
-                        HorizontalSpace(16)
-                        LegendItem(OccupiedOrange, "Ocupada")
+            // --- 3. ÁREA DA GRELHA (Ocupa o resto do espaço) ---
+            // Usamos Box com weight(1f) para garantir que a área abaixo
+            // ocupa todo o espaço restante e limita a altura da Grid.
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f) // <--- O SEGREDO ESTÁ AQUI. Impede o erro de altura infinita.
+            ) {
+                if (uiState.mesas.isNotEmpty()) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(uiState.mesas) { mesa ->
+                            TableCardReal(mesa = mesa, onClick = { onTableClick(mesa) })
+                        }
                     }
-                }
-                VerticalSpace(16)
-
-                // --- LISTA DE MESAS VAZIA OU COM ERRO ---
-                if (uiState.mesas.isEmpty() && !uiState.isLoading) {
-                    Box(modifier = Modifier.height(200.dp), contentAlignment = Alignment.Center) {
+                } else if (!uiState.isLoading) {
+                    // Mensagem de lista vazia (centralizada no espaço restante)
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
                             text = if (uiState.error != null) "Erro: ${uiState.error}" else "Nenhuma mesa encontrada.",
-                            color = if (uiState.error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (uiState.error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyLarge
                         )
                     }
                 }
-            }
-
-            // --- GRELHA DE MESAS (Conteúdo Principal) ---
-            // Colocamos fora da Column (mas dentro do Box scrollable) para melhor performance da Grid
-            if (uiState.mesas.isNotEmpty()) {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3), // Ajustado para 3 colunas (melhor em mobile)
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 130.dp, start = 16.dp, end = 16.dp, bottom = 16.dp)
-                    // Padding top calculado para não tapar o cabeçalho
-                    // Numa app complexa usaria Scaffold ou Column scrollable + FlowRow
-                ) {
-                    items(uiState.mesas) { mesa ->
-                        TableCardReal(mesa = mesa, onClick = { onTableClick(mesa) })
-                    }
-                }
+                // Se estiver loading, o PullToRefreshBox já trata do indicador no topo
             }
         }
     }
@@ -139,20 +132,18 @@ fun TablesScreen(
 
 @Composable
 fun TableCardReal(mesa: Mesa, onClick: () -> Unit) {
-    // Lógica simples: se o estado vindo da API não for "Livre", consideramos ocupada
     val isOccupied = !mesa.status.equals("Livre", ignoreCase = true)
 
     val backgroundColor = if (isOccupied) OccupiedOrange else AvailableGreen
     val contentColor = if (isOccupied) OnOccupiedOrange else OnAvailableGreen
 
-    // Usamos Card ou Box com tamanho fixo para a grelha ficar alinhada
     Card(
         onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(110.dp) // Altura fixa para consistência visual
+            .height(110.dp)
     ) {
         Column(
             modifier = Modifier
@@ -160,7 +151,6 @@ fun TableCardReal(mesa: Mesa, onClick: () -> Unit) {
                 .padding(10.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Topo: Label e Número
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -171,52 +161,29 @@ fun TableCardReal(mesa: Mesa, onClick: () -> Unit) {
                     color = contentColor.copy(alpha = 0.8f)
                 )
                 Text(
-                    text = mesa.number, // Agora usamos o campo 'number' (String)
+                    text = mesa.number,
                     style = MaterialTheme.typography.titleLarge.copy(fontSize = 22.sp),
                     fontWeight = FontWeight.Bold,
                     color = contentColor
                 )
             }
 
-            // Fundo: Detalhes
             if (isOccupied) {
-                // Mesa Ocupada
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = null,
-                            tint = contentColor.copy(alpha = 0.9f),
-                            modifier = Modifier.size(14.dp)
-                        )
-                        HorizontalSpace(4)
-                        Text(
-                            text = "Ocupada", // Futuro: "${mesa.pessoas} p."
-                            style = MaterialTheme.typography.bodySmall,
-                            color = contentColor
-                        )
-                    }
-                    // Se a API enviar tempo, mostramos aqui
-                    /*
-                    VerticalSpace(2)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.AddCircle,
-                            contentDescription = null,
-                            tint = contentColor.copy(alpha = 0.9f),
-                            modifier = Modifier.size(14.dp)
-                        )
-                        HorizontalSpace(4)
-                        Text(
-                            text = "45min",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = contentColor
-                        )
-                    }
-                    */
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        tint = contentColor.copy(alpha = 0.9f),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    HorizontalSpace(4)
+                    Text(
+                        text = "Ocupada",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = contentColor
+                    )
                 }
             } else {
-                // Mesa Livre
                 Text(
                     text = "Disponível\n${mesa.capacity} lug.",
                     style = MaterialTheme.typography.bodySmall,
@@ -233,15 +200,11 @@ private fun LegendItem(color: Color, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
-                .size(16.dp)
-                .clip(RoundedCornerShape(4.dp))
+                .size(12.dp)
+                .clip(RoundedCornerShape(2.dp))
                 .background(color)
         )
-        HorizontalSpace(8)
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        HorizontalSpace(4)
+        Text(text = text, style = MaterialTheme.typography.bodySmall)
     }
 }
