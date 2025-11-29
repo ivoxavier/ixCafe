@@ -21,13 +21,13 @@ import androidx.navigation.navArgument
 import com.ixsvf.ixcafe.constants.IxCafeConstants
 import com.ixsvf.ixcafe.screens.AuthScreen
 import com.ixsvf.ixcafe.screens.LoginScreen
+import com.ixsvf.ixcafe.screens.OrderScreen // <-- IMPORT CORRETO (O REAL)
 import com.ixsvf.ixcafe.screens.SettingsAuthScreen
 import com.ixsvf.ixcafe.screens.SettingsScreen
 import com.ixsvf.ixcafe.screens.TableManagementScreen
 import com.ixsvf.ixcafe.screens.TablesScreen
 import com.ixsvf.ixcafe.screens.demo.AuthScreenDemo
-import com.ixsvf.ixcafe.screens.demo.OrderScreenDemo
-import com.ixsvf.ixcafe.screens.demo.TablesScreenDemo
+// import com.ixsvf.ixcafe.screens.demo.OrderScreenDemo <-- REMOVIDO
 import com.ixsvf.ixcafe.services.repository.model.EmpregadosProfile
 import com.ixsvf.ixcafe.ui.theme.IxCafeTheme
 import com.ixsvf.ixcafe.viewmodel.LoginViewModel
@@ -44,19 +44,13 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
                     val navController = rememberNavController()
-
-                    // 1. Criar o SessionViewModel ao nível da Activity
                     val sessionViewModel: SessionViewModel = viewModel()
-
-                    // 2. Observar se devemos fazer logout forçado
                     val shouldLogout by sessionViewModel.shouldLogout.collectAsState()
 
-                    // 3. Reação ao Logout Forçado (A magia acontece aqui!)
                     LaunchedEffect(shouldLogout) {
                         if (shouldLogout) {
-                            // Limpa a pilha e vai para o login
                             navController.navigate(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) {
-                                popUpTo(0) { inclusive = true } // Limpa TUDO
+                                popUpTo(0) { inclusive = true }
                             }
                             sessionViewModel.onLogoutCompleted()
                         }
@@ -77,10 +71,8 @@ class MainActivity : ComponentActivity() {
                                 uiState = uiState,
                                 onProfileSelected = { profile ->
                                     if (profile.name == IxCafeConstants.APPSETTINGS.DEMO_KEY) {
-                                        // Rota Demo
                                         navController.navigate("authDemo/${profile.name}")
                                     } else {
-                                        // Rota Real (Passamos o ID)
                                         navController.navigate("auth/${profile.id}")
                                     }
                                 },
@@ -93,14 +85,12 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- Rota 2: Auth Screen (Demo - PIN 1234) ---
+                        // --- Rota 2: Auth Screen (Demo) ---
                         composable(
                             route = "authDemo/{profileName}",
                             arguments = listOf(navArgument("profileName") { type = NavType.StringType })
                         ) { backStackEntry ->
                             val name = backStackEntry.arguments?.getString("profileName") ?: "Demonstração"
-
-                            // Para demo, criamos um perfil fictício
                             AuthScreenDemo(
                                 profile = EmpregadosProfile(id = "demo", name = name, role = "Empregado"),
                                 onCorrectPin = {
@@ -108,21 +98,17 @@ class MainActivity : ComponentActivity() {
                                         popUpTo(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) { inclusive = true }
                                     }
                                 },
-                                onNavigateBack = {
-                                    navController.popBackStack()
-                                }
+                                onNavigateBack = { navController.popBackStack() }
                             )
                         }
 
+                        // --- Rota 3: Auth Screen (Real) ---
                         composable("auth/{profileId}") { backStackEntry ->
                             val id = backStackEntry.arguments?.getString("profileId") ?: ""
-
                             AuthScreen(
                                 profileId = id,
                                 onLoginSuccess = {
-                                    // --- AQUI: AVISAR A SESSÃO QUE O LOGIN OCORREU ---
                                     sessionViewModel.startSession(id)
-
                                     navController.navigate(IxCafeConstants.NAVROUTES.TABLE_SCREEN) {
                                         popUpTo(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) { inclusive = true }
                                     }
@@ -133,29 +119,28 @@ class MainActivity : ComponentActivity() {
 
                         // --- Rota 4: Mesas ---
                         composable(IxCafeConstants.NAVROUTES.TABLE_SCREEN) {
-                            // Injetar ViewModel das Mesas
                             val viewModel: TablesViewModel = viewModel()
                             val uiState by viewModel.uiState.collectAsState()
 
                             TablesScreen(
                                 uiState = uiState,
-                                onRefresh = { viewModel.forceRefresh() }, // Liga ao pull-to-refresh
+                                onRefresh = { viewModel.forceRefresh() },
                                 onTableClick = { mesa ->
-                                    // Passar ID da mesa para o ecrã de pedidos
-                                    // IMPORTANTE: O OrderScreen ainda é 'demo', mas o ID é real
                                     navController.navigate("order/${mesa.id}")
                                 }
                             )
                         }
 
-                        // --- Rota 5: Pedidos ---
+                        // --- Rota 5: Pedidos (AGORA O REAL) ---
                         composable(
                             route = "order/{tableId}",
                             arguments = listOf(navArgument("tableId") { type = NavType.StringType })
                         ) { backStackEntry ->
                             val tableId = backStackEntry.arguments?.getString("tableId") ?: "???"
 
-                            OrderScreenDemo(
+                            // AQUI ESTAVA O ERRO: Usava OrderScreenDemo
+                            // AGORA USA O REAL:
+                            OrderScreen(
                                 tableId = tableId,
                                 onNavigateBackToTables = {
                                     navController.popBackStack()
@@ -171,8 +156,7 @@ class MainActivity : ComponentActivity() {
                         composable("settingsAuth") {
                             SettingsAuthScreen(
                                 onNavigateBack = { navController.popBackStack() },
-                                onLoginSuccess = { user, pass ->
-                                    // Esta rota TEM de existir no NavHost
+                                onLoginSuccess = { _, _ ->
                                     navController.navigate("settingsMain") {
                                         popUpTo("settingsAuth") { inclusive = true }
                                     }
@@ -180,74 +164,36 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- ADICIONE ESTA ROTA SE FALTAR ---
+                        // --- Rota 7: Ecrã Principal de Definições ---
                         composable("settingsMain") {
                             SettingsScreen(
                                 onNavigateBack = {
-                                    // Volta ao login
                                     navController.navigate(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) {
                                         popUpTo(IxCafeConstants.NAVROUTES.LOGIN_SCREEN) { inclusive = true }
                                     }
                                 },
-                                onNavigateToProfileManagement = {
-                                    navController.navigate("profileManagement")
-                                },
-                                onNavigateToTableManagement = {
-                                    navController.navigate("tableManagement")
-                                },
-                                onNavigateToProductManagement = {
-                                    navController.navigate("productManagement")
-                                }
+                                onNavigateToProfileManagement = { navController.navigate("profileManagement") },
+                                onNavigateToTableManagement = { navController.navigate("tableManagement") },
+                                onNavigateToProductManagement = { navController.navigate("productManagement") }
                             )
                         }
 
-                        // --- Rota 7: Definições Principal ---
-                        // --- Rota 7: Ecrã Principal de Definições ---
-                        // --- NOVA ROTA: Gestão de Mesas (O destino) ---
+                        // --- Rota 8: Gestão de Mesas ---
                         composable("tableManagement") {
-                            // 1. Criar o ViewModel
                             val viewModel: TableManagementViewModel = viewModel()
                             val uiState by viewModel.uiState.collectAsState()
 
-                            // 2. Mostrar o Ecrã
                             TableManagementScreen(
                                 uiState = uiState,
-                                onNavigateBack = {
-                                    navController.popBackStack()
-                                },
-                                onCreateMesa = { num, cap, loc ->
-                                    viewModel.criarMesa(num, cap, loc)
-                                },
-                                onClearMessages = {
-                                    viewModel.clearMessages()
-                                }
-                            )
-                        }
-
-                        // --- NOVA ROTA: Gestão de Mesas (O destino) ---
-                        composable("tableManagement") {
-                            // 1. Criar o ViewModel
-                            val viewModel: TableManagementViewModel = viewModel()
-                            val uiState by viewModel.uiState.collectAsState()
-
-                            // 2. Mostrar o Ecrã
-                            TableManagementScreen(
-                                uiState = uiState,
-                                onNavigateBack = {
-                                    navController.popBackStack()
-                                },
-                                onCreateMesa = { num, cap, loc ->
-                                    viewModel.criarMesa(num, cap, loc)
-                                },
-                                onClearMessages = {
-                                    viewModel.clearMessages()
-                                }
+                                onNavigateBack = { navController.popBackStack() },
+                                onCreateMesa = { num, cap, loc -> viewModel.criarMesa(num, cap, loc) },
+                                onClearMessages = { viewModel.clearMessages() }
                             )
                         }
 
                         // --- Rotas Futuras ---
                         composable("profileManagement") { Text("Gestão de Perfis") }
-
+                        composable("productManagement") { Text("Gestão de Produtos") }
                     }
                 }
             }
