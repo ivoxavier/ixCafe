@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.ixsvf.ixcafe.constants.IxCafeConstants
+import com.ixsvf.ixcafe.services.repository.local.dao.CategoriaDao
 import com.ixsvf.ixcafe.services.repository.local.dao.EmpregadosDao
 import com.ixsvf.ixcafe.services.repository.local.dao.MesaDao
 import com.ixsvf.ixcafe.services.repository.local.dao.ProdutoDao
@@ -22,7 +23,7 @@ import com.ixsvf.ixcafe.services.repository.local.model.QueueOrderEntity
         MesaEntity::class,
         QueueOrderEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class IxCafeDatabase: RoomDatabase() {
@@ -31,6 +32,9 @@ abstract class IxCafeDatabase: RoomDatabase() {
     abstract fun produtoDao(): ProdutoDao
     abstract  fun mesaDao(): MesaDao
     abstract fun queueOrderDao(): QueueOrderDao
+
+    abstract fun categoriaDao(): CategoriaDao
+
 
 
     companion object {

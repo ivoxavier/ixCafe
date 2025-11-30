@@ -1,6 +1,5 @@
 package com.ixsvf.ixcafe.viewmodel
 
-
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,6 +7,7 @@ import com.ixsvf.ixcafe.IxCafeApplication
 import com.ixsvf.ixcafe.services.repository.PedidosRepository
 import com.ixsvf.ixcafe.services.repository.ProdutosRepository
 import com.ixsvf.ixcafe.services.repository.model.CartItem
+import com.ixsvf.ixcafe.services.repository.model.Categoria // <-- Importe a Categoria
 import com.ixsvf.ixcafe.services.repository.model.Produto
 import com.ixsvf.ixcafe.services.repository.remote.RetrofitClient
 import com.ixsvf.ixcafe.services.repository.remote.endpoints.LocalApiInterface
@@ -21,7 +21,8 @@ data class OrderUiState(
     val isLoading: Boolean = true,
     val products: List<Produto> = emptyList(),
     val cartItems: List<CartItem> = emptyList(),
-    val categories: List<Int> = emptyList(), // Lista de IDs de categoria disponíveis
+    // ALTERADO: Agora guardamos a lista de objetos Categoria, não apenas IDs
+    val categories: List<Categoria> = emptyList(),
     val selectedCategoryId: Int = 0,
     val cartTotal: Double = 0.0,
     val error: String? = null
@@ -39,30 +40,40 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         val db = (application as IxCafeApplication).database
         val api = RetrofitClient.create(LocalApiInterface::class.java)
 
-        produtosRepository = ProdutosRepository(db.produtoDao(), api)
+        produtosRepository = ProdutosRepository(db.produtoDao(), db.categoriaDao(), api)
         pedidosRepository = PedidosRepository(db.queueOrderDao(), application)
 
-        loadProducts()
+        // Removemos a chamada antiga 'loadProducts()' e usamos apenas a nova
+        loadData()
     }
 
-    private fun loadProducts() {
+    private fun loadData() {
         viewModelScope.launch {
-            // 1. Tentar atualizar da API em background (Fire & Forget)
-            try { produtosRepository.refreshProdutos() } catch (e: Exception) { e.printStackTrace() }
+            // 1. Sync API (Usando a variável correta: produtosRepository)
+            try {
+                produtosRepository.refreshTudo()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
 
-            // 2. Observar dados locais (Room)
-            produtosRepository.todosProdutos.collect { produtos ->
-                val categories = produtos.map { it.categoryId }.distinct().sorted()
-
+            // 2. Observar Categorias (Usando a variável correta: produtosRepository)
+            produtosRepository.categorias.collect { cats ->
                 _uiState.update { state ->
                     state.copy(
-                        isLoading = false,
-                        products = produtos,
-                        categories = categories,
+                        categories = cats,
                         // Seleciona a primeira categoria por defeito se ainda não houver seleção
-                        selectedCategoryId = if (state.selectedCategoryId == 0 && categories.isNotEmpty()) categories.first() else state.selectedCategoryId
+                        selectedCategoryId = if (state.selectedCategoryId == 0 && cats.isNotEmpty()) cats.first().id else state.selectedCategoryId,
+                        // Se tivermos categorias, paramos o loading principal
+                        isLoading = false
                     )
                 }
+            }
+        }
+
+        // 3. Observar Produtos (Usando a variável correta: produtosRepository)
+        viewModelScope.launch {
+            produtosRepository.todosProdutos.collect { produtos ->
+                _uiState.update { it.copy(products = produtos) }
             }
         }
     }
@@ -76,7 +87,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
     fun addToCart(product: Produto) {
         val currentCart = _uiState.value.cartItems.toMutableList()
 
-        // Procura item igual (mesmo produto E sem observação, para agrupar simples)
+        // Procura item igual
         val existingItemIndex = currentCart.indexOfFirst { it.product.id == product.id && it.observation == null }
 
         if (existingItemIndex != -1) {
@@ -128,11 +139,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun updateCartState(newCart: List<CartItem>) {
         val subtotal = newCart.sumOf { it.product.price * it.quantity }
-        // IVA (assumindo 23% incluído ou a somar, depende da regra de negócio)
-        // Aqui vamos assumir que o preço do produto já inclui IVA para simplificar o total visual
-        // Se quiser somar IVA à parte, ajuste aqui.
-        val total = subtotal // ou subtotal * 1.23
-
+        val total = subtotal
         _uiState.update { it.copy(cartItems = newCart, cartTotal = total) }
     }
 
@@ -146,16 +153,9 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             try {
-                // ID do Empregado: Idealmente viria da Sessão.
-                // Como ainda não temos o SessionManager injetado aqui, usamos 1 (Admin) ou hardcoded.
-                // TODO: Injetar SessionViewModel ou ler das SharedPreferences
-                val empregadoId = 1
-
+                val empregadoId = 1 // TODO: Ler da Sessão
                 pedidosRepository.confirmarPedido(tableId, empregadoId, currentCart)
-
-                // Limpar carrinho após sucesso (o WorkManager trata do envio)
                 updateCartState(emptyList())
-
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = "Erro ao registar: ${e.message}") }
             }
