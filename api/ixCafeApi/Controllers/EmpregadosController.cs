@@ -120,16 +120,8 @@ namespace ixCafeApi.Controllers{
             {
                 return NotFound(error);
             }
-
-
             return Ok(result);
-
-
         }
-
-
-
-
 
     }
 }

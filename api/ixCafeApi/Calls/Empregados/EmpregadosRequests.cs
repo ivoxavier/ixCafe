@@ -135,16 +135,11 @@ namespace ixCafeApi.Calls.Empregados
          public async Task<object> Login(string nomeEmpregado, string pin,int token_role)
         {
             
-            
-            
+                        
             var parameters = new DynamicParameters();
-
-
-
 
             parameters.Add("p_nome", nomeEmpregado);
             parameters.Add("p_token_role", token_role);
-
 
             parameters.Add("pidEmpregado", dbType: DbType.Int64, direction: ParameterDirection.Output);
             parameters.Add("pPinAcesso", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
@@ -200,14 +195,6 @@ namespace ixCafeApi.Calls.Empregados
         }
 
 
-
-
-
-
-
-
-
-
         public async Task<object> Listar()
         {
 
@@ -221,9 +208,6 @@ namespace ixCafeApi.Calls.Empregados
                     commandType: CommandType.StoredProcedure
                 );
             }
-
-
-
 
             if (listaEmpregados.Count() == 0)
             {

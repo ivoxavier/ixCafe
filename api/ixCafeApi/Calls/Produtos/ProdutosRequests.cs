@@ -128,5 +128,67 @@ namespace ixCafeApi.Calls.Produtos
         }
 
 
+        public async Task<object> Listar(int categoria)
+        {
+            var parameters = new DynamicParameters();
+
+            parameters.Add("pCategoria", categoria);
+
+            IEnumerable<ListarProdutosResponse> listarProdutosResponse;
+
+            await using (var connection = new MySqlConnection(_connectionString))
+            {
+
+                listarProdutosResponse = await connection.QueryAsync<ListarProdutosResponse>(
+                    "sp_ListarProdutos",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+            }
+
+            if (listarProdutosResponse.Count() == 0)
+            {
+
+                ErrorResponse errorResponse = new ErrorResponse
+                {
+                    ErrorCode = 99,
+                    ErrorMessage = "Sem Resultados!"
+                };
+                return errorResponse;
+            }
+
+            return listarProdutosResponse;
+        }
+
+
+        public async Task<object> ListarCategorias()
+        {
+
+
+            IEnumerable<ListarCategoriasResponse> listarCategoriasResponse;
+
+            await using (var connection = new MySqlConnection(_connectionString))
+            {
+
+                listarCategoriasResponse = await connection.QueryAsync<ListarCategoriasResponse>(
+                    "sp_ListarCategorias",
+                    commandType: CommandType.StoredProcedure
+                );
+            }
+
+            if (listarCategoriasResponse.Count() == 0)
+            {
+
+                ErrorResponse errorResponse = new ErrorResponse
+                {
+                    ErrorCode = 99,
+                    ErrorMessage = "Sem Resultados!"
+                };
+                return errorResponse;
+            }
+
+            return listarCategoriasResponse;
+        }
+
     }
 }

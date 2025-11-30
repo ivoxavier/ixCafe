@@ -15,7 +15,6 @@ namespace ixCafeApi.Controllers{
             _produtosRequests = produtosRequests;
         }
 
-
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
@@ -64,14 +63,44 @@ namespace ixCafeApi.Controllers{
         {
 
             var result = await _produtosRequests.Disponibilidade(nome,disponibilidade); 
-            
+        
 
             if(result is ErrorResponse error)
             {
                 return Conflict(error);
             }
 
-            
+            return Ok(result);
+        }
+
+
+        [ProducesResponseType(typeof(IEnumerable<ListarProdutosResponse>), 200)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet]
+        [Route("api/produtos/listar")]
+        public async Task<ActionResult<IEnumerable<ListarProdutosResponse>>> Listar (int categoria)
+        {
+            var result = await _produtosRequests.Listar(categoria);
+
+            if(result is ErrorResponse error)
+            {
+                return NotFound(error);
+            }
+            return Ok(result);
+        }
+
+        [ProducesResponseType(typeof(IEnumerable<ListarCategoriasResponse>), 200)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet]
+        [Route("api/produtos/listarcategorias")]
+        public async Task<ActionResult<IEnumerable<ListarCategoriasResponse>>> ListarCategorias ()
+        {
+            var result = await _produtosRequests.ListarCategorias();
+
+            if(result is ErrorResponse error)
+            {
+                return NotFound(error);
+            }
             return Ok(result);
         }
 
