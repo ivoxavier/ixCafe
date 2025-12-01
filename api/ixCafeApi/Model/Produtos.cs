@@ -20,6 +20,10 @@ public class ProdutosCriarRequest
 
 public class ListarProdutosResponse 
 {
+
+    public required int IdCategoria {get;set;}
+    public required int IdProduto {get;set;}
+
     public required string Nome { get; set; }
 
     public required string Descricao { get; set; }
@@ -30,7 +34,7 @@ public class ListarProdutosResponse
 
 public class ListarCategoriasResponse 
 {
-    public required int id_Categoria { get; set; }
+    public required int idCategoria { get; set; }
 
     public required string Nome { get; set; }
 
