@@ -26,7 +26,7 @@ android {
     buildTypes {
         debug{
             //onePlus6T hotspot
-            buildConfigField("String", "BASE_URL", "\"http://10.26.59.101:5143/\"")
+            buildConfigField("String", "BASE_URL", "\"http://10.88.153.101:5143/\"")
 
             //buildConfigField("String", "BASE_URL", "\"http://192.168.1.73:7281/\"")
             buildConfigField("String", "CLIENT_NAME", "\"Nome do Cliente\"")
