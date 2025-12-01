@@ -73,6 +73,14 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         // 3. Observar Produtos (Usando a variável correta: produtosRepository)
         viewModelScope.launch {
             produtosRepository.todosProdutos.collect { produtos ->
+
+                // --- DEBUG: ADICIONE ISTO ---
+                println("--- DEBUG PRODUTOS ---")
+                produtos.forEach { p ->
+                    println("Produto: ${p.name} | ID Cat: ${p.categoryId} | Preço: ${p.price}")
+                }
+                // ---------------------------
+
                 _uiState.update { it.copy(products = produtos) }
             }
         }

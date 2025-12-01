@@ -10,6 +10,7 @@ import com.ixsvf.ixcafe.services.repository.local.dao.EmpregadosDao
 import com.ixsvf.ixcafe.services.repository.local.dao.MesaDao
 import com.ixsvf.ixcafe.services.repository.local.dao.ProdutoDao
 import com.ixsvf.ixcafe.services.repository.local.dao.QueueOrderDao
+import com.ixsvf.ixcafe.services.repository.local.model.CategoriaEntity
 import com.ixsvf.ixcafe.services.repository.local.model.EmpregadosEntity
 import com.ixsvf.ixcafe.services.repository.local.model.MesaEntity
 import com.ixsvf.ixcafe.services.repository.local.model.ProdutoEntity
@@ -21,9 +22,10 @@ import com.ixsvf.ixcafe.services.repository.local.model.QueueOrderEntity
         EmpregadosEntity::class,
         ProdutoEntity::class,
         MesaEntity::class,
-        QueueOrderEntity::class
+        QueueOrderEntity::class,
+        CategoriaEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class IxCafeDatabase: RoomDatabase() {

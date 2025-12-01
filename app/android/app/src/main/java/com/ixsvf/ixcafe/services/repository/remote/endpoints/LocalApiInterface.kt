@@ -9,6 +9,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface LocalApiInterface {
 
@@ -18,8 +19,10 @@ interface LocalApiInterface {
 
     // Swagger: /api/produtos/listar (Retorna TODOS se não passar categoria, ou filtrados)
     // Idealmente, pedimos todos de uma vez para guardar cache local.
+    // --- CORREÇÃO AQUI: Adicionado o parâmetro @Query ---
+    // Isto transforma a chamada em: .../listar?categoria=1
     @GET("api/produtos/listar")
-    suspend fun getProdutos(): List<ProdutoDto>
+    suspend fun getProdutosPorCategoria(@Query("categoria") categoriaId: Int): List<ProdutoDto>
 
     // Swagger: /api/pedido/pedir
     @POST("/api/pedido/pedir")

@@ -2,10 +2,13 @@ package com.ixsvf.ixcafe.services.repository
 
 import com.ixsvf.ixcafe.services.repository.local.dao.CategoriaDao
 import com.ixsvf.ixcafe.services.repository.local.dao.ProdutoDao
-import com.ixsvf.ixcafe.services.repository.local.model.ProdutoEntity
+import com.ixsvf.ixcafe.services.repository.local.model.toCategoria
+import com.ixsvf.ixcafe.services.repository.local.model.toCategoriaEntity
 import com.ixsvf.ixcafe.services.repository.local.model.toProduto
 import com.ixsvf.ixcafe.services.repository.local.model.toProdutoEntity
+import com.ixsvf.ixcafe.services.repository.model.Categoria
 import com.ixsvf.ixcafe.services.repository.model.Produto
+import com.ixsvf.ixcafe.services.repository.model.dto.ProdutoDto
 import com.ixsvf.ixcafe.services.repository.remote.endpoints.LocalApiInterface
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -13,56 +16,50 @@ import kotlinx.coroutines.flow.map
 class ProdutosRepository(
     private val produtoDao: ProdutoDao,
     private val categoriaDao: CategoriaDao,
-    private val localApi: LocalApiInterface // A sua API .NET no Raspberry Pi
+    private val localApi: LocalApiInterface
 ) {
 
+    val categorias: Flow<List<Categoria>> = categoriaDao.getAllCategorias()
+        .map { entities -> entities.map { it.toCategoria() } }
 
-
-
-
-    fun getProdutosPorCategoria(categoryId: Int): Flow<List<Produto>> {
-
-
-
-
-
-    // --- 1. FONTE DE VERDADE (Room) ---
-    // A UI observa isto. Filtramos logo por categoria e disponibilidade no DAO.
-        return produtoDao.getProdutosPorCategoria(categoryId)
-            .map { entities -> entities.map { it.toProduto() } }
-    }
-
-    // Para obter todos (se precisar para cache ou pesquisa global)
     val todosProdutos: Flow<List<Produto>> = produtoDao.getAllProdutos()
-        .map { entities ->
-            entities.map { it.toProduto() }
-        }
+        .map { entities -> entities.map { it.toProduto() } }
 
-    // --- 2. SINCRONIZAÇÃO (API .NET -> Room) ---
-    suspend fun refreshProdutos() {
-        val remoteProdutos = localApi.getProdutos()
-
-        val entities = remoteProdutos.map { dto ->
-            ProdutoEntity(
-                id = dto.id,
-                categoryId = dto.idCategoria,
-                name = dto.nome,
-                description = dto.descricao,
-                price = dto.preco,
-                isAvailable = true // Assumimos true se a API não enviar
-            )
-        }
-        produtoDao.updateProdutos(entities)
-    }
-
-    // --- SINCRONIZAÇÃO ---
     suspend fun refreshTudo() {
-        // 1. Buscar Categorias
+        // 1. Obter Categorias da API
         val remoteCats = localApi.getCategorias()
-        categoriaDao.updateCategorias(remoteCats.map { it.toEntity() })
 
-        // 2. Buscar Produtos
-        val remoteProds = localApi.getProdutos()
-        produtoDao.updateProdutos(remoteProds.map { it.toEntity() })
+        // Guardar Categorias no Room
+        categoriaDao.updateCategorias(remoteCats.map { it.toCategoriaEntity() })
+
+        // 2. Obter Produtos (Ciclo por cada categoria)
+        val listaFinalProdutos = mutableListOf<ProdutoDto>()
+
+        for (categoria in remoteCats) {
+            try {
+                println("!!! DEBUG: A pedir produtos da categoria ${categoria.id}...")
+
+                // Chama a API com o ID da categoria (ex: ?categoria=1)
+                val produtosDestaCategoria = localApi.getProdutosPorCategoria(categoria.id)
+
+                listaFinalProdutos.addAll(produtosDestaCategoria)
+
+            } catch (e: Exception) {
+                // Se der erro numa categoria (ex: 404 ou vazia), ignora e continua para a próxima
+                // DICA: Se a sua API retornar Error 99 para categorias vazias, este catch impede o crash.
+                println("!!! AVISO: Falha ao obter produtos da categoria ${categoria.id}: ${e.message}")
+            }
+        }
+
+        // 3. Guardar TODOS os produtos encontrados no Room
+        if (listaFinalProdutos.isNotEmpty()) {
+            produtoDao.updateProdutos(listaFinalProdutos.map { it.toProdutoEntity() })
+            println("!!! SUCESSO: ${listaFinalProdutos.size} produtos guardados.")
+        } else {
+            println("!!! AVISO: Nenhum produto encontrado em nenhuma categoria.")
+        }
     }
+
+    // Alias para compatibilidade
+    suspend fun refreshProdutos() = refreshTudo()
 }

@@ -16,13 +16,12 @@ data class MesaDto(
 
 @Serializable
 data class ProdutoDto(
-    // O seu Swagger 'ListarProdutosResponse' só mostra nome, descricao e preco.
-    // MAS, para isto funcionar, a sua API *TEM* de retornar também o ID e o ID da Categoria.
-    // Vou assumir que vai ajustar a API para incluir 'id_produto' e 'id_categoria'.
-    // Se não incluir, não conseguimos ligar o produto à categoria correta!
+    // CORRIGIDO: "idProduto"
+    @SerialName("idProduto") val id: Int = 0,
 
-    @SerialName("id_produto") val id: Int = 0, // Ajuste na API necessário
-    @SerialName("id_categoria") val categoryId: Int = 0, // Ajuste na API necessário
+    // CORRIGIDO: "idCategoria"
+    @SerialName("idCategoria") val categoryId: Int = 0,
+
     @SerialName("nome") val nome: String,
     @SerialName("descricao") val descricao: String? = null,
     @SerialName("preco") val preco: Double
@@ -31,10 +30,11 @@ data class ProdutoDto(
 
 @Serializable
 data class CategoriaDto(
-    @SerialName("id_Categoria") val id: Int,
+    // CORRIGIDO: Tem de ser igual ao JSON ("idCategoria")
+    @SerialName("idCategoria") val id: Int,
+
     @SerialName("nome") val nome: String
 )
-
 
 // --- PEDIDOS (POST) ---
 
