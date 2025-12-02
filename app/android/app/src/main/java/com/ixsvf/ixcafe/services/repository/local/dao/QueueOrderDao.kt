@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.ixsvf.ixcafe.services.repository.local.model.QueueOrderEntity
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
@@ -30,4 +31,10 @@ interface QueueOrderDao {
     // 5. Contar quantos estão pendentes (Útil para mostrar um indicador na UI "X por enviar")
     @Query("SELECT COUNT(*) FROM queue_orders")
     fun getPendingCount(): kotlinx.coroutines.flow.Flow<Int>
+
+    // Adicione este método para observar a contagem
+    @Query("SELECT COUNT(*) FROM queue_orders")
+    fun getPendingCountFlow(): Flow<Int>
+
+
 }

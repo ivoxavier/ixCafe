@@ -1,13 +1,14 @@
 package com.ixsvf.ixcafe.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
@@ -39,14 +40,14 @@ fun TablesScreen(
     onTableClick: (Mesa) -> Unit,
     onRefresh: () -> Unit
 ) {
+    // O PullToRefreshBox gere o gesto de "puxar para atualizar"
     PullToRefreshBox(
         isRefreshing = uiState.isLoading,
         onRefresh = onRefresh,
         modifier = Modifier.fillMaxSize()
     ) {
-        // ESTRUTURA SEGURA:
-        // Uma Column que ocupa o ecrã todo.
-        // NENHUM 'verticalScroll' aqui, pois a Grid já tem o seu próprio scroll.
+        // Column principal que organiza o layout verticalmente
+        // IMPORTANTE: Não usamos .verticalScroll() aqui para evitar conflito com a Grid
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -54,28 +55,41 @@ fun TablesScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- 1. CABEÇALHO (Tamanho fixo, fica no topo) ---
+
+            // --- 1. CABEÇALHO (Fixo no topo) ---
             Row(
+                modifier = Modifier
+                    .fillMaxWidth(), // Ocupar a largura toda
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.SpaceBetween // Espalhar os elementos
             ) {
-                Icon(
-                    imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = "Restaurante",
-                    modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-                HorizontalSpace(8)
-                Text(
-                    text = BuildConfig.CLIENT_NAME,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
+                // A. O Indicador de Sincronização (Esquerda)
+                SyncStatusIndicator(count = uiState.pendingSyncCount)
+
+                // B. O Título (Centro)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.ShoppingCart,
+                        contentDescription = "Restaurante",
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                    HorizontalSpace(8)
+                    Text(
+                        text = BuildConfig.CLIENT_NAME,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+
+                // C. Espaçador Invisível (Direita)
+                // Isto serve apenas para equilibrar o layout e manter o título mais ou menos ao centro
+                Spacer(modifier = Modifier.width(48.dp))
             }
             VerticalSpace(24)
 
-            // --- 2. LEGENDA (Tamanho fixo) ---
+            // --- 2. LEGENDA (Fixa) ---
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.Start
@@ -95,17 +109,18 @@ fun TablesScreen(
             }
             VerticalSpace(16)
 
-            // --- 3. ÁREA DA GRELHA (Ocupa o resto do espaço) ---
-            // Usamos Box com weight(1f) para garantir que a área abaixo
-            // ocupa todo o espaço restante e limita a altura da Grid.
+            // --- 3. CONTEÚDO VARIÁVEL (Grelha ou Mensagem) ---
+            // Usamos Box com weight(1f) para ocupar TODO o espaço restante no ecrã.
+            // Isto impede o erro de "altura infinita".
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f) // <--- O SEGREDO ESTÁ AQUI. Impede o erro de altura infinita.
+                    .weight(1f)
             ) {
                 if (uiState.mesas.isNotEmpty()) {
+                    // A Grelha gere o seu próprio scroll dentro deste espaço
                     LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
+                        columns = GridCells.Fixed(3), // 3 colunas
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxSize()
@@ -115,8 +130,11 @@ fun TablesScreen(
                         }
                     }
                 } else if (!uiState.isLoading) {
-                    // Mensagem de lista vazia (centralizada no espaço restante)
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    // Mensagem de lista vazia ou erro, centrada no espaço disponível
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
                             text = if (uiState.error != null) "Erro: ${uiState.error}" else "Nenhuma mesa encontrada.",
                             color = if (uiState.error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -124,7 +142,8 @@ fun TablesScreen(
                         )
                     }
                 }
-                // Se estiver loading, o PullToRefreshBox já trata do indicador no topo
+                // Se isLoading for true, o PullToRefreshBox mostra o indicador no topo,
+                // não precisamos de mostrar nada extra aqui.
             }
         }
     }
@@ -132,6 +151,7 @@ fun TablesScreen(
 
 @Composable
 fun TableCardReal(mesa: Mesa, onClick: () -> Unit) {
+    // Lógica visual: Se não for "Livre" (case insensitive), é ocupada
     val isOccupied = !mesa.status.equals("Livre", ignoreCase = true)
 
     val backgroundColor = if (isOccupied) OccupiedOrange else AvailableGreen
@@ -143,7 +163,7 @@ fun TableCardReal(mesa: Mesa, onClick: () -> Unit) {
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(110.dp)
+            .height(110.dp) // Altura fixa para uniformidade
     ) {
         Column(
             modifier = Modifier
@@ -151,6 +171,7 @@ fun TableCardReal(mesa: Mesa, onClick: () -> Unit) {
                 .padding(10.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
+            // Topo do Cartão
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -168,6 +189,7 @@ fun TableCardReal(mesa: Mesa, onClick: () -> Unit) {
                 )
             }
 
+            // Fundo do Cartão
             if (isOccupied) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -206,5 +228,40 @@ private fun LegendItem(color: Color, text: String) {
         )
         HorizontalSpace(4)
         Text(text = text, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+// --- COMPONENTE DO INDICADOR DE SYNC ---
+@Composable
+fun SyncStatusIndicator(count: Int) {
+    val isSyncing = count > 0
+    val iconColor = if (isSyncing) Color(0xFFE65100) else Color(0xFF4CAF50) // Laranja vs Verde
+    val containerColor = if (isSyncing) Color(0xFFFFF3E0) else Color(0xFFE8F5E9)
+
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = containerColor,
+        modifier = Modifier.height(32.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = if (isSyncing) Icons.Default.MailOutline else Icons.Default.Check,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(16.dp)
+            )
+            if (isSyncing) {
+                HorizontalSpace(4)
+                Text(
+                    text = "$count a enviar...",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = iconColor,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
     }
 }
