@@ -3,6 +3,7 @@ using Dapper;
 using MySqlConnector; 
 using System.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
+using System.Text.Json;
 
 namespace ixCafeApi.Calls.Pedido
 {
@@ -17,14 +18,17 @@ namespace ixCafeApi.Calls.Pedido
 
         public async Task<object> Pedido(PedidoRequest pedidoRequest)
         {
-            String? pedido_serialized = pedidoRequest.ToString();
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
 
-
+           string pedido_serialized = JsonSerializer.Serialize(pedidoRequest, jsonOptions);
 
             var parameters = new DynamicParameters();    
 
 
-            parameters.Add("p_pedido_jsoned", pedido_serialized);
+            parameters.Add("p_pedido", pedido_serialized,DbType.String);
             parameters.Add("perrorCode", dbType: DbType.Int32, direction: ParameterDirection.Output);
             parameters.Add("perrorMessage", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
             parameters.Add("pnPedido", dbType: DbType.Int32, direction: ParameterDirection.Output);
@@ -39,22 +43,23 @@ namespace ixCafeApi.Calls.Pedido
                 );
             }
 
-            int errorCode = parameters.Get<int>("perrorCode");
+            int? errorCode = parameters.Get<int?>("perrorCode");
+            string? errorMessage = parameters.Get<string?>("perrorMessage");
 
-            if (errorCode != 0)
+            if (errorCode.HasValue && errorCode.Value != 0)
             {
 
                 ErrorResponse errorResponse = new ErrorResponse
                 {
-                    ErrorCode = errorCode,
-                    ErrorMessage = parameters.Get<string>("perrorMessage")
+                    ErrorCode = errorCode.Value,
+                    ErrorMessage = errorMessage ?? "Erro desconhecido na base de dados."
                 };
+
                 return errorResponse;
             }
 
-                return parameters.Get<long>("pnPedido");
+                return new { success = true, message = "Pedido registado com sucesso" };
         }
-
 
         public async Task<object> Listar()
         {

@@ -34,6 +34,7 @@ public class MesasEditarRequest
 
 public class ListaMesasResponse
 {
+    public int IdMesa { get; set; }
     public int NumeroMesa {get;set;}
     public string Localizacao {get;set;}
     public int Capacidade {get;set;}

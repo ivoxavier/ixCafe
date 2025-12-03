@@ -6,7 +6,7 @@ namespace ixCafeApi.Models;
 
 public class PedidoRequest
 {
-    public int IdEmpregado {get;set;}
+    public string IdEmpregado {get;set;}
 
     public int IdMesa {get;set;}
 
@@ -25,7 +25,7 @@ public class PedidosList
 
 public class ListarPedidosResponse
 {
-    public int IdEmpregado {get;set;}
+    public string IdEmpregado {get;set;}
     public int IdMesa {get;set;}
     public string PedidoData {get;set;}
     public required List<PedidosList> Pedidos { get; set; }
