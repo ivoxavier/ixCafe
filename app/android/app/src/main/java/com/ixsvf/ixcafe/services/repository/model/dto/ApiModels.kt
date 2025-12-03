@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MesaDto(
+    @SerialName("idMesa") val id: Int,
     @SerialName("numeroMesa") val numero: Int,
     @SerialName("localizacao") val localizacao: String? = null,
     @SerialName("capacidade") val capacidade: Int
@@ -40,7 +41,7 @@ data class CategoriaDto(
 
 @Serializable
 data class PedidoRequest(
-    @SerialName("idEmpregado") val idEmpregado: Int,
+    @SerialName("idEmpregado") val idEmpregado: String,
     @SerialName("idMesa") val idMesa: Int,
     @SerialName("pedidos") val pedidos: List<PedidoItemRequest>
 )

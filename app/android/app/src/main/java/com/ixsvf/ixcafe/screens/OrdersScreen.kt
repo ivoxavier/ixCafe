@@ -51,6 +51,7 @@ private val OnAvailableGreen = Color(0xFFFFFFFF)
 @Composable
 fun OrderScreen(
     tableId: String,
+    empregadoId: String,
     onNavigateBackToTables: () -> Unit,
     onCloseAccount: () -> Unit
 ) {
@@ -95,7 +96,7 @@ fun OrderScreen(
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) showBottomSheet = false
                     }
-                    viewModel.confirmOrder(tableId)
+                    viewModel.confirmOrder(tableId, empregadoId )
                 },
                 onCloseAccount = onCloseAccount,
                 onIncrement = { viewModel.incrementItem(it) },

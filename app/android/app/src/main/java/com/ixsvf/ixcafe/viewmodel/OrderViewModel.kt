@@ -153,7 +153,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
 
     // --- AÇÕES FINAIS ---
 
-    fun confirmOrder(tableIdStr: String) {
+    fun confirmOrder(tableIdStr: String, empregadoId: String) {
         val tableId = tableIdStr.toIntOrNull() ?: return
         val currentCart = _uiState.value.cartItems
 
@@ -161,8 +161,9 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             try {
-                val empregadoId = 1 // TODO: Ler da Sessão
+                // O empregadoId agora vem do parâmetro, é o real!
                 pedidosRepository.confirmarPedido(tableId, empregadoId, currentCart)
+
                 updateCartState(emptyList())
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = "Erro ao registar: ${e.message}") }

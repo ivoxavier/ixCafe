@@ -39,7 +39,7 @@ class MesasRepository(
                 // O Swagger não retorna ID unico, usa o numero como chave?
                 // Se o SQL tem id_mesa, a API devia retorná-lo.
                 // Por agora, usamos o numero como ID (se for unico)
-                id = dto.numero,
+                id = dto.id,
                 number = dto.numero.toString(),
                 location = dto.localizacao,
                 capacity = dto.capacidade,

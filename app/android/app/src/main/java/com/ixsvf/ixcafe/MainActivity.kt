@@ -45,6 +45,7 @@ class MainActivity : ComponentActivity() {
 
                     val navController = rememberNavController()
                     val sessionViewModel: SessionViewModel = viewModel()
+                    val currentUser by sessionViewModel.currentUser.collectAsState()
                     val shouldLogout by sessionViewModel.shouldLogout.collectAsState()
 
                     LaunchedEffect(shouldLogout) {
@@ -137,11 +138,13 @@ class MainActivity : ComponentActivity() {
                             arguments = listOf(navArgument("tableId") { type = NavType.StringType })
                         ) { backStackEntry ->
                             val tableId = backStackEntry.arguments?.getString("tableId") ?: "???"
+                            val currentUserId = currentUser?.id ?: ""
 
                             // AQUI ESTAVA O ERRO: Usava OrderScreenDemo
                             // AGORA USA O REAL:
                             OrderScreen(
                                 tableId = tableId,
+                                empregadoId = currentUserId,
                                 onNavigateBackToTables = {
                                     navController.popBackStack()
                                 },

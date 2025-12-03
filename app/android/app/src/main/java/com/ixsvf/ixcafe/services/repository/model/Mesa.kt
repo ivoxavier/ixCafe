@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class Mesa(
     // Mapeamento exato com os nomes que vêm da API .NET (baseados no SQL)
     @SerialName("id_mesa") val id: Int,
-    @SerialName("numero_mesa") val number: String, // SQL é Varchar
+    @SerialName("numeroMesa") val number: String, // SQL é Varchar
     @SerialName("localizacao") val location: String? = null,
     @SerialName("capacidade") val capacity: Int,
 

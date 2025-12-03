@@ -26,7 +26,7 @@ class PedidosRepository(
 
     suspend fun confirmarPedido(
         idMesa: Int,
-        idEmpregado: Int,
+        idEmpregado: String,
         itens: List<CartItem>
     ) {
         val pedidoItens = itens.map { item ->
