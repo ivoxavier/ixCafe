@@ -1,5 +1,6 @@
 package com.ixsvf.ixcafe.services.repository.remote.endpoints
 
+import com.ixsvf.ixcafe.services.repository.model.ProductRequest
 import com.ixsvf.ixcafe.services.repository.model.dto.CategoriaDto
 import com.ixsvf.ixcafe.services.repository.model.dto.MesaDto
 import com.ixsvf.ixcafe.services.repository.model.dto.MesaRequest
@@ -7,8 +8,11 @@ import com.ixsvf.ixcafe.services.repository.model.dto.PedidoRequest
 import com.ixsvf.ixcafe.services.repository.model.dto.ProdutoDto
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface LocalApiInterface {
@@ -37,4 +41,17 @@ interface LocalApiInterface {
     suspend fun getCategorias(): List<CategoriaDto>
 
 
+    // Assumindo que vai criar este endpoint na API .NET:
+    @PUT("api/mesas/editar/{id}")
+    suspend fun editarMesa(@Path("id") id: Int, @Body mesa: MesaRequest): Response<Unit>
+
+    // Opcional: Apagar
+    @DELETE("api/mesas/apagar/{id}")
+    suspend fun apagarMesa(@Path("id") id: Int): Response<Unit>
+
+
+
+
+    @POST("api/products") // Confirme se a rota no .NET é "api/products" ou só "products"
+    suspend fun createProduct(@Body product: ProductRequest): Response<Unit>
 }

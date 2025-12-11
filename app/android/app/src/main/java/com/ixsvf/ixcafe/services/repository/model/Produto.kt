@@ -13,3 +13,10 @@ data class Produto(
     @SerialName("preco") val price: Double,
     @SerialName("disponivel") val isAvailable: Boolean
 )
+
+@Serializable
+data class ProductRequest(
+    val name: String,
+    val price: Double, // O .NET deve estar à espera de decimal/double
+    val description: String? = null // Opcional
+)

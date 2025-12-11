@@ -59,7 +59,10 @@ class TableManagementViewModel(application: Application) : AndroidViewModel(appl
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, successMessage = null) }
             try {
-                repository.criarMesa(numInt, capInt, localizacao)
+                // --- CORREÇÃO AQUI ---
+                // A ordem correta é: (Numero, Localizacao, Capacidade)
+                repository.criarMesa(numInt, localizacao, capInt)
+
                 _uiState.update {
                     it.copy(isLoading = false, successMessage = "Mesa $numInt criada com sucesso!")
                 }

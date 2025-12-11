@@ -57,21 +57,33 @@ class MesasRepository(
     }
 
 
-    suspend fun criarMesa(numero: Int, capacidade: Int, localizacao: String) {
-        val request = MesaRequest(
-            numero = numero,
-            capacidade = capacidade,
-            localizacao = localizacao
-        )
-
+    suspend fun criarMesa(numero: Int, localizacao: String, capacidade: Int) {
+        val request = MesaRequest(numero, localizacao, capacidade)
         val response = localApi.criarMesa(request)
 
         if (response.isSuccessful) {
-            // Se criou com sucesso no servidor, atualizamos o cache local
+            refreshMesas() // Atualiza a lista local
+        } else {
+            throw Exception("Erro API: ${response.code()}")
+        }
+    }
+
+    suspend fun editarMesa(id: Int, numero: Int, localizacao: String, capacidade: Int) {
+        val request = MesaRequest(numero, localizacao, capacidade)
+        val response = localApi.editarMesa(id, request)
+
+        if (response.isSuccessful) {
             refreshMesas()
         } else {
-            // Se deu erro (ex: número de mesa duplicado), lançamos exceção
-            throw Exception("Erro ao criar mesa: ${response.code()} - ${response.message()}")
+            throw Exception("Erro API: ${response.code()}")
+        }
+    }
+
+    suspend fun apagarMesa(id: Int) {
+        val response = localApi.apagarMesa(id)
+        if (response.isSuccessful) {
+            //mesaDao.deleteById(id) // Apaga localmente
+            refreshMesas() // Garante sincronia
         }
     }
 
