@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -23,7 +24,8 @@ fun SettingsScreen(
     // Estes parâmetros resolvem os erros que tinha na MainActivity
     onNavigateToProfileManagement: () -> Unit,
     onNavigateToTableManagement: () -> Unit,
-    onNavigateToProductManagement: () -> Unit
+    onNavigateToProductManagement: () -> Unit,
+    onNavigateToPrinterSettings: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -84,6 +86,15 @@ fun SettingsScreen(
                 description = "Perfis e permissões",
                 icon = Icons.Default.Person,
                 onClick = onNavigateToProfileManagement
+            )
+
+            VerticalSpace(8)
+
+            SettingsMenuItem(
+                text = "Impressoras",
+                description = "Configurar IP e Porta",
+                icon = Icons.Default.Settings, // Certifique-se de ter importado Icons.Default.Print ou use outro
+                onClick = onNavigateToPrinterSettings
             )
         }
     }

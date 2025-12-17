@@ -23,6 +23,7 @@ import com.ixsvf.ixcafe.screens.AuthScreen
 import com.ixsvf.ixcafe.screens.LoginScreen
 import com.ixsvf.ixcafe.screens.OrderScreen // <-- IMPORT CORRETO (O REAL)
 import com.ixsvf.ixcafe.screens.SettingsAuthScreen
+import com.ixsvf.ixcafe.screens.SettingsPrinterScreen
 import com.ixsvf.ixcafe.screens.SettingsScreen
 import com.ixsvf.ixcafe.screens.TableManagementScreen
 import com.ixsvf.ixcafe.screens.TablesScreen
@@ -177,7 +178,14 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onNavigateToProfileManagement = { navController.navigate("profileManagement") },
                                 onNavigateToTableManagement = { navController.navigate("tableManagement") },
-                                onNavigateToProductManagement = { navController.navigate("productManagement") }
+                                onNavigateToProductManagement = { navController.navigate("productManagement") },
+                                onNavigateToPrinterSettings = { navController.navigate("settingsPrinter") }
+                            )
+                        }
+
+                        composable("settingsPrinter") {
+                            SettingsPrinterScreen(
+                                onNavigateBack = { navController.popBackStack() }
                             )
                         }
 
