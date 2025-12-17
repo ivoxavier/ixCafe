@@ -74,7 +74,7 @@ namespace ixCafeApi.Calls.Pedido
             {
 
                 listaPedidos = await connection.QueryAsync<ListarPedidosResponse>(
-                    "sp_ListarEmpregado",
+                    "sp_ListarPedidos",
                     parameters,
                     commandType: CommandType.StoredProcedure
                 );
